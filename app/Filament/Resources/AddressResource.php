@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AddressResource\Pages;
-use App\Filament\Resources\AddressResource\RelationManagers\UserRelationManager;
 use App\Filament\Resources\AddressResource\RelationManagers\UsersRelationManager;
 use App\Models\Address;
 use Filament\Forms;
@@ -13,11 +12,12 @@ use Filament\Tables;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\QueryBuilder; // Используем QueryBuilder для текстового фильтра
-
+use Filament\Tables\Filters\QueryBuilder;
 class AddressResource extends Resource
 {
     protected static ?string $model = Address::class;
+    protected static ?string $navigationLabel = 'Адреса';
+    protected static ?string $navigationGroup = 'Пользователь';
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
 

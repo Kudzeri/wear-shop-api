@@ -1355,6 +1355,304 @@
                     }
                 }
             }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Получить всех пользователей",
+                "description": "Возвращает список всех пользователей",
+                "operationId": "c457726701591d1183b53aa71fc13441",
+                "responses": {
+                    "200": {
+                        "description": "Список пользователей",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Иван"
+                                            },
+                                            "surname": {
+                                                "type": "string",
+                                                "example": "Иванов"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "example": "ivan@example.com"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "+7 123 456 78 90"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Создать нового пользователя",
+                "description": "Создает нового пользователя",
+                "operationId": "592819a0265360b2014512d6dbfaf0e7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Иван"
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "example": "Иванов"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ivan@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+7 123 456 78 90"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Пользователь успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Иван"
+                                        },
+                                        "surname": {
+                                            "type": "string",
+                                            "example": "Иванов"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "ivan@example.com"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "example": "+7 123 456 78 90"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные данные"
+                    }
+                }
+            }
+        },
+        "/api/users/{id}": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Получить пользователя по ID",
+                "description": "Возвращает пользователя по ID",
+                "operationId": "36a33ff774d5cba33c039dec2c3e0287",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пользователь найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Иван"
+                                        },
+                                        "surname": {
+                                            "type": "string",
+                                            "example": "Иванов"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "ivan@example.com"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "example": "+7 123 456 78 90"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Обновить информацию о пользователе",
+                "description": "Обновляет информацию о пользователе",
+                "operationId": "b9091397c8b25f12c6adb74be6ce3a5a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Иван"
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "example": "Иванов"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "ivan@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+7 123 456 78 90"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Пользователь успешно обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Иван"
+                                        },
+                                        "surname": {
+                                            "type": "string",
+                                            "example": "Иванов"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "ivan@example.com"
+                                        },
+                                        "phone": {
+                                            "type": "string",
+                                            "example": "+7 123 456 78 90"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные данные"
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Удалить пользователя",
+                "description": "Удаляет пользователя по ID",
+                "operationId": "fa56cffde745d3f152f95cbacd936c0b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пользователь успешно удален"
+                    },
+                    "404": {
+                        "description": "Пользователь не найден"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1433,6 +1731,10 @@
         {
             "name": "Sizes",
             "description": "Управление размерами товаров"
+        },
+        {
+            "name": "User",
+            "description": "Работа с пользователями"
         },
         {
             "name": "Addresses",

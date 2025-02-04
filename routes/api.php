@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SizeController;
 
@@ -44,4 +45,12 @@ Route::prefix('products')->group(function () {
     Route::put('{id}', [ProductController::class, 'update']);
     Route::delete('{id}', [ProductController::class, 'destroy']);
     Route::get('size/{size_slug}', [ProductController::class, 'getBySize']);
+});
+
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('{id}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('{id}', [UserController::class, 'update']);
+    Route::delete('{id}', [UserController::class, 'destroy']);
 });
