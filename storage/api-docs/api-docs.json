@@ -1198,12 +1198,17 @@
                             "schema": {
                                 "required": [
                                     "address_id",
-                                    "items"
+                                    "items",
+                                    "delivery"
                                 ],
                                 "properties": {
                                     "address_id": {
                                         "description": "ID адреса доставки",
                                         "type": "integer"
+                                    },
+                                    "delivery": {
+                                        "description": "Способ доставки",
+                                        "type": "string"
                                     },
                                     "items": {
                                         "type": "array",
@@ -1633,6 +1638,275 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/orders/{orderId}/confirm-payment": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Подтверждение оплаты заказа",
+                "description": "Обновляет статус заказа на 'completed' после успешной оплаты.",
+                "operationId": "263352a55c39da7585394f54416f7416",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID заказа, который необходимо подтвердить",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Оплата подтверждена, заказ завершен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Оплата прошла успешно, заказ завершен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Заказ уже обработан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ уже обработан"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders/{orderId}/pay": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Создание платежа для заказа",
+                "description": "Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
+                "operationId": "a29ed11b4561635ef0e574881f6668e0",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID заказа, который необходимо оплатить",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на подтверждение оплаты",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "confirmation_url": {
+                                            "type": "string",
+                                            "example": "https://yoomoney.ru/checkout/payments/v2/..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Оплата уже была произведена или заказ отменен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Оплата уже была произведена или заказ отменен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Не авторизован"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка при создании платежа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка при создании платежа"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/yookassa/webhook": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Webhook для обработки платежей ЮKassa",
+                "description": "Обрабатывает уведомления от ЮKassa о статусе платежа и обновляет статус заказа.",
+                "operationId": "4067f565c5e647f3d1d73e69386aa6bc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "object": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "2a3b5c7d-1234-5678-9abc-def012345678"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "succeeded"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Статус платежа обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Статус платежа обновлен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный запрос",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Некорректный запрос"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/products": {
@@ -2684,6 +2958,10 @@
         {
             "name": "Orders",
             "description": "Orders"
+        },
+        {
+            "name": "Payments",
+            "description": "Payments"
         },
         {
             "name": "Products",

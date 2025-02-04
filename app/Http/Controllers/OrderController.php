@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Size;
 use App\Models\Address;
 use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use YooKassa\Client;
 
 /**
  * @OA\Tag(
@@ -151,7 +154,20 @@ class OrderController extends Controller
             ]);
         }
 
-        return response()->json($order, 201);
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'order_id' => $order->id,
+            'amount' => $totalPrice,
+            'currency' => 'RUB',
+            'status' => 'pending',
+            'payment_method' => null,
+            'transaction_id' => null
+        ]);
+
+        return response()->json([
+            'order' => $order,
+            'payment' => $payment
+        ], 201);
     }
 
     /**
@@ -640,41 +656,202 @@ class OrderController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/orders/{order}/complete",
-     *     summary="Завершение заказа и начисление баллов лояльности",
+     *     path="/api/orders/{orderId}/confirm-payment",
+     *     summary="Подтверждение оплаты заказа",
+     *     description="Обновляет статус заказа на 'completed' после успешной оплаты.",
      *     tags={"Orders"},
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {}}},
      *     @OA\Parameter(
-     *         name="order",
+     *         name="orderId",
      *         in="path",
      *         required=true,
-     *         description="ID заказа",
+     *         description="ID заказа, который необходимо подтвердить",
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Баллы начислены",
+     *         description="Оплата подтверждена, заказ завершен",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Баллы начислены: 10")
+     *             @OA\Property(property="message", type="string", example="Оплата прошла успешно, заказ завершен")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=404,
-     *         description="Заказ не найден"
+     *         response=400,
+     *         description="Заказ уже обработан",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ уже обработан"))
      *     ),
      *     @OA\Response(
-     *         response=403,
-     *         description="Нет доступа"
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ не найден"))
      *     )
      * )
      */
 
-    public function completeOrder(Order $order, LoyaltyService $loyaltyService)
+    public function confirmPayment(Request $request, $orderId)
     {
-        $user = $order->user;
-        $points = round($order->total_price * 0.01);
-        $loyaltyService->addPoints($user, $points, "Начислено за покупку #{$order->id}");
+        $order = Order::find($orderId);
+        if (!$order) {
+            return response()->json(['message' => 'Заказ не найден'], 404);
+        }
 
-        return response()->json(['message' => "Баллы начислены: $points"]);
+        if ($order->status !== 'pending') {
+            return response()->json(['message' => 'Заказ уже обработан'], 400);
+        }
+
+        $order->update(['status' => 'completed']);
+
+        return response()->json(['message' => 'Оплата прошла успешно, заказ завершен']);
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/orders/{orderId}/pay",
+     *     summary="Создание платежа для заказа",
+     *     description="Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="orderId",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа, который необходимо оплатить",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Ссылка на подтверждение оплаты",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="confirmation_url", type="string", example="https://yoomoney.ru/checkout/payments/v2/...")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Оплата уже была произведена или заказ отменен",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Оплата уже была произведена или заказ отменен"))
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Не авторизован"))
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ не найден"))
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка при создании платежа",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Ошибка при создании платежа"))
+     *     )
+     * )
+     */
+
+    public function payOrder(Request $request, $orderId)
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['message' => 'Не авторизован'], 401);
+        }
+
+        $order = Order::where('user_id', $user->id)->find($orderId);
+        if (!$order) {
+            return response()->json(['message' => 'Заказ не найден'], 404);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json(['message' => 'Оплата уже была произведена или заказ отменен'], 400);
+        }
+
+        $client = new Client();
+        $client->setAuth(config('services.yookassa.shop_id'), config('services.yookassa.secret_key'));
+
+        try {
+            $payment = $client->createPayment([
+                'amount' => [
+                    'value' => number_format($order->total_price, 2, '.', ''),
+                    'currency' => 'RUB',
+                ],
+                'payment_method_data' => [
+                    'type' => 'bank_card', // Можно заменить на sbp, yandex_split и т.д.
+                ],
+                'confirmation' => [
+                    'type' => 'redirect',
+                    'return_url' => route('order.payment.success', ['orderId' => $order->id]),
+                ],
+                'capture' => true,
+                'description' => "Оплата заказа #{$order->id}",
+            ], uniqid('', true));
+
+            return response()->json(['confirmation_url' => $payment->getConfirmation()->getConfirmationUrl()]);
+        } catch (\Exception $e) {
+            Log::error("Ошибка при создании платежа: " . $e->getMessage());
+            return response()->json(['message' => 'Ошибка при создании платежа'], 500);
+        }
+    }
+
+
+    /**
+     * @OA\Post(
+     *     path="/api/yookassa/webhook",
+     *     summary="Webhook для обработки платежей ЮKassa",
+     *     description="Обрабатывает уведомления от ЮKassa о статусе платежа и обновляет статус заказа.",
+     *     tags={"Payments"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="object", type="object",
+     *                 @OA\Property(property="id", type="string", example="2a3b5c7d-1234-5678-9abc-def012345678"),
+     *                 @OA\Property(property="status", type="string", example="succeeded")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Статус платежа обновлен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Статус платежа обновлен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректный запрос",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Некорректный запрос")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Заказ не найден")
+     *         )
+     *     )
+     * )
+     */
+
+    public function yookassaWebhook(Request $request)
+    {
+        $data = $request->all();
+        if (!isset($data['object']['id'])) {
+            return response()->json(['message' => 'Некорректный запрос'], 400);
+        }
+
+        $paymentId = $data['object']['id'];
+        $order = Order::where('payment_id', $paymentId)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Заказ не найден'], 404);
+        }
+
+        if ($data['object']['status'] === 'succeeded') {
+            $order->update(['status' => 'completed']);
+        } elseif ($data['object']['status'] === 'canceled') {
+            $order->update(['status' => 'cancelled']);
+        }
+
+        return response()->json(['message' => 'Статус платежа обновлен']);
+    }
+
 }

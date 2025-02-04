@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
@@ -62,9 +63,10 @@ Route::prefix('users')->group(function () {
 // Для пользователя (обычные действия с заказами)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('orders', [OrderController::class, 'store']); // Создать заказ
+    Route::post('orders/{orderId}/pay', [OrderController::class, 'payOrder']);
     Route::get('orders/{id}', [OrderController::class, 'show']); // Показать заказ
     Route::get('orders', [OrderController::class, 'index']); // Получить все заказы
-
+    Route::post('orders/{order}/complete', [OrderController::class, 'completeOrder']);
     Route::put('orders/{id}/status', [OrderController::class, 'updateStatus']); // Обновить статус заказа
 });
 
@@ -90,3 +92,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/loyalty/points', [LoyaltyController::class, 'getUserPoints']);
     Route::get('/loyalty/level', [LoyaltyController::class, 'getUserLevel']);
 });
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/pay', [PaymentController::class, 'pay']);
+    Route::post('/webhook', [PaymentController::class, 'webhook']);
+});
+
+Route::get('/order/payment/success/{orderId}', [OrderController::class, 'confirmPayment'])->name('order.payment.success');
+Route::post('/yookassa/webhook', [OrderController::class, 'yookassaWebhook']);
