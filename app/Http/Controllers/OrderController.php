@@ -638,6 +638,37 @@ class OrderController extends Controller
         return response()->json(['message' => 'Заказ удален']);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/orders/{order}/complete",
+     *     summary="Завершение заказа и начисление баллов лояльности",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Баллы начислены",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Баллы начислены: 10")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Нет доступа"
+     *     )
+     * )
+     */
+
     public function completeOrder(Order $order, LoyaltyService $loyaltyService)
     {
         $user = $order->user;
