@@ -76,8 +76,9 @@ class OrderController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"address_id", "items"},
+     *             required={"address_id", "items", "delivery"},
      *             @OA\Property(property="address_id", type="integer", description="ID адреса доставки"),
+     *             @OA\Property(property="delivery", type="string", description="Способ доставки"),
      *             @OA\Property(
      *                 property="items",
      *                 type="array",
@@ -118,6 +119,7 @@ class OrderController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.size_id' => 'required|exists:sizes,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'delivery' => 'string|required'
         ]);
 
         // Вычисляем общую цену
@@ -135,6 +137,7 @@ class OrderController extends Controller
             'address_id' => $validated['address_id'],
             'total_price' => $totalPrice,
             'status' => 'pending', // Начальный статус
+            'delivery' => $validated['delivery'],
         ]);
 
         // Создаем позиции заказа
@@ -346,6 +349,7 @@ class OrderController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',  // Для админа мы указываем пользователя при создании заказа
             'address_id' => 'required|exists:addresses,id',
+            'delivery' => 'required|string',
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.size_id' => 'required|exists:sizes,id',
@@ -367,6 +371,7 @@ class OrderController extends Controller
             'address_id' => $validated['address_id'],
             'total_price' => $totalPrice,
             'status' => 'pending', // Начальный статус
+            'delivery' => $validated['delivery'],
         ]);
 
         // Создаем позиции заказа
