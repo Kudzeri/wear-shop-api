@@ -69,11 +69,11 @@ class ProductResource extends Resource
                     ->options(Size::all()->pluck('name', 'id')->toArray()),
 
                 Forms\Components\KeyValue::make('preference')
-                    ->label('Предпочтения')
+                    ->label('Обмеры')
                     ->nullable(),
 
                 Forms\Components\KeyValue::make('measurements')
-                    ->label('Размеры (по параметрам)')
+                    ->label('Параметры модели')
                     ->nullable(),
             ]);
     }
