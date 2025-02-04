@@ -4,6 +4,7 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
@@ -82,4 +83,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('wishlist', WishlistController::class)
         ->only(['index', 'store', 'destroy'])
         ->parameters(['wishlist' => 'product_id']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/loyalty/use-points', [LoyaltyController::class, 'usePoints']);
+    Route::get('/loyalty/points', [LoyaltyController::class, 'getUserPoints']);
+    Route::get('/loyalty/level', [LoyaltyController::class, 'getUserLevel']);
 });

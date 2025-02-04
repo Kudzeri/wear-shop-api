@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('addresses', function (Blueprint $table) {
-            $table->string('street')->nullable()->after('city');
-            $table->string('house')->nullable()->after('street');
+        Schema::create('loyalty_levels', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->integer('min_points');
+            $table->integer('discount');
         });
+
     }
 
     /**
@@ -22,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('addresses', function (Blueprint $table) {
-            $table->dropColumn(['street', 'house']);
-        });
+        Schema::dropIfExists('loyalty_levels');
     }
 };

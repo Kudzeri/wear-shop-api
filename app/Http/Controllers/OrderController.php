@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Size;
 use App\Models\Address;
+use App\Services\LoyaltyService;
 use Illuminate\Http\Request;
 
 /**
@@ -630,5 +631,14 @@ class OrderController extends Controller
         $order->delete();
 
         return response()->json(['message' => 'Заказ удален']);
+    }
+
+    public function completeOrder(Order $order, LoyaltyService $loyaltyService)
+    {
+        $user = $order->user;
+        $points = round($order->total_price * 0.01);
+        $loyaltyService->addPoints($user, $points, "Начислено за покупку #{$order->id}");
+
+        return response()->json(['message' => "Баллы начислены: $points"]);
     }
 }

@@ -991,6 +991,138 @@
                 }
             }
         },
+        "/api/loyalty/use-points": {
+            "post": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Списать баллы у пользователя",
+                "operationId": "03683cdce3aa1136c669debffefe8fe0",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "points"
+                                ],
+                                "properties": {
+                                    "points": {
+                                        "description": "Количество списываемых баллов",
+                                        "type": "integer",
+                                        "example": 100
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Баллы успешно списаны",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Баллы успешно списаны"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка списания баллов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Недостаточно баллов."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/loyalty/points": {
+            "get": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Получить общее количество баллов пользователя",
+                "operationId": "311743b3f07ee2af9564257be204c475",
+                "responses": {
+                    "200": {
+                        "description": "Общее количество баллов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_points": {
+                                            "type": "integer",
+                                            "example": 500
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/loyalty/level": {
+            "get": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Получить уровень лояльности пользователя",
+                "operationId": "ee44e7994692e32733b0466dba02216a",
+                "responses": {
+                    "200": {
+                        "description": "Текущий уровень лояльности",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "level": {
+                                            "type": "string",
+                                            "example": "Gold"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/orders": {
             "get": {
                 "tags": [
@@ -2524,6 +2656,10 @@
         {
             "name": "Colors",
             "description": "CRUD операции с цветами"
+        },
+        {
+            "name": "Loyalty",
+            "description": "Программа лояльности"
         },
         {
             "name": "Sizes",
