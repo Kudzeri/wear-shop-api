@@ -57,10 +57,12 @@ class AddressController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"state", "city", "postal_code", "apartment"},
+     *             required={"state", "city", "postal_code", "apartment", "street", "house"},
      *             @OA\Property(property="is_primary", type="boolean"),
      *             @OA\Property(property="state", type="string"),
      *             @OA\Property(property="city", type="string"),
+     *             @OA\Property(property="street", type="string"),
+     *             @OA\Property(property="house", type="string"),
      *             @OA\Property(property="postal_code", type="string"),
      *             @OA\Property(property="apartment", type="string")
      *         )
@@ -75,6 +77,8 @@ class AddressController extends Controller
             'is_primary' => 'boolean',
             'state' => 'required|string',
             'city' => 'required|string',
+            'street' => 'required|string',
+            'house' => 'required|string',
             'postal_code' => 'required|string',
             'apartment' => 'required|string'
         ]);

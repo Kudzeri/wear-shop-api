@@ -13,6 +13,8 @@ class Address extends Model
         'is_primary',
         'state',
         'city',
+        'street',
+        'house',
         'postal_code',
         'apartment'
     ];
@@ -20,5 +22,15 @@ class Address extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'address_users')->withTimestamps();
+    }
+
+    public function getFullAddressAttribute(): string
+    {
+        return collect([
+            $this->city,
+            $this->street ? "ул. {$this->street}" : null,
+            $this->house ? "д. {$this->house}" : null,
+            $this->apartment ? "кв. {$this->apartment}" : null
+        ])->filter()->join(', ');
     }
 }

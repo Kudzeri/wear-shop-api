@@ -6,28 +6,25 @@ use App\Filament\Resources\AddressResource\Pages;
 use App\Filament\Resources\AddressResource\RelationManagers\UsersRelationManager;
 use App\Models\Address;
 use Filament\Forms;
-use Filament\Forms\Components\Builder;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Filters\BaseFilter;
-use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Table;
+
 class AddressResource extends Resource
 {
     protected static ?string $model = Address::class;
     protected static ?string $navigationLabel = 'Адреса';
     protected static ?string $navigationGroup = 'Пользователь';
-
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
-    public static function form(Forms\Form $form): Forms\Form
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Toggle::make('is_primary')
                     ->label('Основной адрес')
-                    ->nullable(),
+                    ->columnSpanFull(),
 
                 Forms\Components\TextInput::make('state')
                     ->label('Штат/Область')
@@ -39,40 +36,62 @@ class AddressResource extends Resource
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('postal_code')
-                    ->label('Почтовый код')
-                    ->nullable()
-                    ->maxLength(20),
+                Forms\Components\TextInput::make('street')
+                    ->label('Улица')
+                    ->required()
+                    ->maxLength(255),
+
+                Forms\Components\TextInput::make('house')
+                    ->label('Дом')
+                    ->required()
+                    ->maxLength(10),
 
                 Forms\Components\TextInput::make('apartment')
-                    ->label('Квартира/Дом')
+                    ->label('Квартира')
                     ->nullable()
-                    ->maxLength(255),
-            ]);
+                    ->maxLength(10),
+
+                Forms\Components\TextInput::make('postal_code')
+                    ->label('Почтовый индекс')
+                    ->nullable()
+                    ->maxLength(20),
+            ])
+            ->columns(2);
     }
 
-    public static function table(Tables\Table $table): Tables\Table
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('state')->label('Штат/Область'),
-                Tables\Columns\TextColumn::make('city')->label('Город'),
-                Tables\Columns\TextColumn::make('postal_code')->label('Почтовый код'),
-                Tables\Columns\TextColumn::make('apartment')->label('Квартира/Дом'),
+                Tables\Columns\TextColumn::make('full_address')
+                    ->label('Полный адрес')
+                    ->wrap()
+                    ->searchable(['city', 'street', 'house', 'apartment']),
+
+                Tables\Columns\IconColumn::make('is_primary')
+                    ->label('Основной')
+                    ->boolean(),
+
+                Tables\Columns\TextColumn::make('postal_code')
+                    ->label('Индекс')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Создан')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(), // Создание нового адреса
+                // Фильтры можно добавить при необходимости
             ])
             ->actions([
-                Tables\Actions\EditAction::make(), // Редактирование адреса
-                Tables\Actions\DeleteAction::make(), // Удаление адреса
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(), // Удаление нескольких адресов
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

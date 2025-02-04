@@ -4,6 +4,7 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -53,4 +54,25 @@ Route::prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'store']);
     Route::put('{id}', [UserController::class, 'update']);
     Route::delete('{id}', [UserController::class, 'destroy']);
+});
+
+
+// Для пользователя (обычные действия с заказами)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('orders', [OrderController::class, 'store']); // Создать заказ
+    Route::get('orders/{id}', [OrderController::class, 'show']); // Показать заказ
+    Route::get('orders', [OrderController::class, 'index']); // Получить все заказы
+
+    Route::put('orders/{id}/status', [OrderController::class, 'updateStatus']); // Обновить статус заказа
+});
+
+// Для администратора (CRUD для заказов)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('role:admin')->group(function () {
+        Route::get('admin/orders', [OrderController::class, 'admIndex']); // Получить все заказы
+        Route::get('admin/orders/{id}', [OrderController::class, 'admShow']); // Показать конкретный заказ
+        Route::post('admin/orders', [OrderController::class, 'admStore']); // Создать заказ (админ)
+        Route::put('admin/orders/{id}', [OrderController::class, 'admUpdate']); // Обновить заказ (админ)
+        Route::delete('admin/orders/{id}', [OrderController::class, 'admDestroy']); // Удалить заказ (админ)
+    });
 });

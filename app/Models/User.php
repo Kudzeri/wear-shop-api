@@ -62,4 +62,8 @@ class User extends Authenticatable
         return $this->addresses()->where('is_primary', true)->first();
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

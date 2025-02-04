@@ -47,7 +47,9 @@
                                     "state",
                                     "city",
                                     "postal_code",
-                                    "apartment"
+                                    "apartment",
+                                    "street",
+                                    "house"
                                 ],
                                 "properties": {
                                     "is_primary": {
@@ -57,6 +59,12 @@
                                         "type": "string"
                                     },
                                     "city": {
+                                        "type": "string"
+                                    },
+                                    "street": {
+                                        "type": "string"
+                                    },
+                                    "house": {
                                         "type": "string"
                                     },
                                     "postal_code": {
@@ -977,6 +985,518 @@
                 }
             }
         },
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Получить все заказы текущего пользователя",
+                "description": "Позволяет авторизованному пользователю получить все свои заказы с деталями (продукты, размеры, адрес).",
+                "operationId": "325fd3d55bbe9bb39645269928fa4983",
+                "responses": {
+                    "200": {
+                        "description": "Список заказов успешно получен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Order"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Не авторизован"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказы не найдены",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказы не найдены"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Создать заказ",
+                "description": "Позволяет авторизованному пользователю создать новый заказ.",
+                "operationId": "createOrder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "address_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "address_id": {
+                                        "description": "ID адреса доставки",
+                                        "type": "integer"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "description": "ID продукта",
+                                                    "type": "integer"
+                                                },
+                                                "size_id": {
+                                                    "description": "ID размера продукта",
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "description": "Количество товара",
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Создан заказ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации данных"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Показать заказ",
+                "description": "Позволяет пользователю получить информацию о своем заказе.",
+                "operationId": "getOrder",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные заказа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/orders/{id}/status": {
+            "put": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Обновить статус заказа",
+                "description": "Позволяет авторизованному пользователю обновить статус своего заказа.",
+                "operationId": "updateOrderStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "description": "Новый статус заказа",
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "processed",
+                                            "shipped",
+                                            "delivered",
+                                            "cancelled"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Статус заказа обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Получить все заказы",
+                "description": "Позволяет администратору получить все заказы.",
+                "operationId": "getAllOrders",
+                "responses": {
+                    "200": {
+                        "description": "Список заказов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Order"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Создать заказ (для администратора)",
+                "description": "Позволяет администратору создать заказ от имени пользователя.",
+                "operationId": "createOrderForAdmin",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "address_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "description": "ID пользователя, от имени которого создается заказ",
+                                        "type": "integer"
+                                    },
+                                    "address_id": {
+                                        "description": "ID адреса доставки",
+                                        "type": "integer"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "description": "ID продукта",
+                                                    "type": "integer"
+                                                },
+                                                "size_id": {
+                                                    "description": "ID размера продукта",
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "description": "Количество товара",
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Создан заказ",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Показать заказ (для администратора)",
+                "description": "Позволяет администратору получить информацию о заказе.",
+                "operationId": "getOrderForAdmin",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Данные заказа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Обновить заказ (для администратора)",
+                "description": "Позволяет администратору обновить заказ.",
+                "operationId": "updateOrderForAdmin",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "address_id",
+                                    "items"
+                                ],
+                                "properties": {
+                                    "address_id": {
+                                        "description": "ID нового адреса доставки",
+                                        "type": "integer"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "description": "ID продукта",
+                                                    "type": "integer"
+                                                },
+                                                "size_id": {
+                                                    "description": "ID размера продукта",
+                                                    "type": "integer"
+                                                },
+                                                "quantity": {
+                                                    "description": "Количество товара",
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Заказ обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Order"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Удалить заказ (для администратора)",
+                "description": "Позволяет администратору удалить заказ.",
+                "operationId": "deleteOrderForAdmin",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заказ удален"
+                    },
+                    "403": {
+                        "description": "Недостаточно прав"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/products": {
             "get": {
                 "tags": [
@@ -1657,6 +2177,115 @@
     },
     "components": {
         "schemas": {
+            "Order": {
+                "required": [
+                    "id",
+                    "user_id",
+                    "address_id",
+                    "total_price",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID заказа",
+                        "type": "integer"
+                    },
+                    "user_id": {
+                        "description": "ID пользователя",
+                        "type": "integer"
+                    },
+                    "address_id": {
+                        "description": "ID адреса доставки",
+                        "type": "integer"
+                    },
+                    "total_price": {
+                        "description": "Общая сумма заказа",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "status": {
+                        "description": "Статус заказа",
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "processed",
+                            "shipped",
+                            "delivered",
+                            "cancelled"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OrderItem"
+                        }
+                    },
+                    "address": {
+                        "$ref": "#/components/schemas/Address"
+                    }
+                },
+                "type": "object"
+            },
+            "OrderItem": {
+                "required": [
+                    "product_id",
+                    "size_id",
+                    "quantity",
+                    "price"
+                ],
+                "properties": {
+                    "product_id": {
+                        "description": "ID продукта",
+                        "type": "integer"
+                    },
+                    "size_id": {
+                        "description": "ID размера продукта",
+                        "type": "integer"
+                    },
+                    "quantity": {
+                        "description": "Количество товара",
+                        "type": "integer"
+                    },
+                    "price": {
+                        "description": "Цена товара",
+                        "type": "number",
+                        "format": "float"
+                    }
+                },
+                "type": "object"
+            },
+            "Address": {
+                "required": [
+                    "id",
+                    "street",
+                    "city",
+                    "postal_code",
+                    "country"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "ID адреса",
+                        "type": "integer"
+                    },
+                    "street": {
+                        "description": "Улица",
+                        "type": "string"
+                    },
+                    "city": {
+                        "description": "Город",
+                        "type": "string"
+                    },
+                    "postal_code": {
+                        "description": "Почтовый код",
+                        "type": "string"
+                    },
+                    "country": {
+                        "description": "Страна",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "Product": {
                 "title": "Product",
                 "description": "Модель продукта",
@@ -1743,6 +2372,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Orders",
+            "description": "Orders"
         },
         {
             "name": "Products",
