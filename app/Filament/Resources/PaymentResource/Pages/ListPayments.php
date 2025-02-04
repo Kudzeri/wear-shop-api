@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PaymentResource\Pages;
 
 use App\Filament\Resources\PaymentResource;
+use App\Filament\Widgets\PaymentChart;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
