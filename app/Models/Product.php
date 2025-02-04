@@ -36,4 +36,8 @@ class Product extends Model
         return $this->belongsToMany(Size::class, 'product_size');
     }
 
+    public function wishlistedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'wishlists');
+    }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SizeController;
 
@@ -75,4 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('admin/orders/{id}', [OrderController::class, 'admUpdate']); // Обновить заказ (админ)
         Route::delete('admin/orders/{id}', [OrderController::class, 'admDestroy']); // Удалить заказ (админ)
     });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('wishlist', WishlistController::class)
+        ->only(['index', 'store', 'destroy'])
+        ->parameters(['wishlist' => 'product_id']);
 });
