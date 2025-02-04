@@ -1,4 +1,4 @@
-
+Проект находится по ссылке http://kudzer5h.beget.tech/
 # API Documentation
 
 ## Установка проекта
