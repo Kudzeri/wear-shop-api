@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Color;
 use App\Models\Size;
 use Filament\Forms;
@@ -17,6 +18,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 
 class ProductResource extends Resource
 {
@@ -33,10 +35,11 @@ class ProductResource extends Resource
                     ->label('Название товара')
                     ->required(),
 
-                TextInput::make('category_id')
+                Select::make('category_id')
                     ->label('Категория')
-                    ->required()
-                    ->integer(),
+                    ->options(Category::query()->whereNotNull('title')->pluck('title', 'id')->toArray())
+                    ->searchable()
+                    ->required(),
 
                 Textarea::make('description')
                     ->label('Описание товара')
@@ -47,8 +50,8 @@ class ProductResource extends Resource
                     ->multiple()
                     ->disk('public')
                     ->directory('products')
-                    ->previewable() // Добавляет предпросмотр изображений
-                    ->reorderable(), // Позволяет менять порядок изображений
+                    ->previewable()
+                    ->reorderable(),
 
                 TextInput::make('video_url')
                     ->label('Ссылка на видео')
@@ -103,9 +106,10 @@ class ProductResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('category.name')
+                TextColumn::make('category.title')
                     ->label('Категория')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(), // Добавлен поиск по категории
 
                 TagsColumn::make('colors.name')
                     ->label('Цвета')
@@ -119,6 +123,7 @@ class ProductResource extends Resource
                     ->label('Дата создания')
                     ->date()
                     ->sortable(),
+
                 TextColumn::make('price')
                     ->label('Цена')
                     ->sortable()
