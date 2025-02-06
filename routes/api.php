@@ -62,25 +62,25 @@ Route::prefix('users')->group(function () {
 });
 
 
-// Для пользователя (обычные действия с заказами)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('orders', [OrderController::class, 'store']); // Создать заказ
-    Route::post('orders/{orderId}/pay', [OrderController::class, 'payOrder']);
-    Route::get('orders/{id}', [OrderController::class, 'show']); // Показать заказ
-    Route::get('orders', [OrderController::class, 'index']); // Получить все заказы
-    Route::post('orders/{order}/complete', [OrderController::class, 'completeOrder']);
-    Route::put('orders/{id}/status', [OrderController::class, 'updateStatus']); // Обновить статус заказа
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Пользовательские маршруты
+    Route::post('/orders', [OrderController::class, 'store']); // Создание заказа
+    Route::get('/orders', [OrderController::class, 'index']); // Получение всех заказов пользователя
+    Route::get('/orders/{id}', [OrderController::class, 'show']); // Получение конкретного заказа
+    Route::post('/orders/{orderId}/pay', [OrderController::class, 'payOrder']); // Оплата заказа
+    Route::post('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']); // Отмена заказа
+
+    // Webhook от YooKassa (без аутентификации)
+    Route::post('/orders/webhook', [OrderController::class, 'webhook']);
 });
 
-// Для администратора (CRUD для заказов)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::middleware('role:admin')->group(function () {
-        Route::get('admin/orders', [OrderController::class, 'admIndex']); // Получить все заказы
-        Route::get('admin/orders/{id}', [OrderController::class, 'admShow']); // Показать конкретный заказ
-        Route::post('admin/orders', [OrderController::class, 'admStore']); // Создать заказ (админ)
-        Route::put('admin/orders/{id}', [OrderController::class, 'admUpdate']); // Обновить заказ (админ)
-        Route::delete('admin/orders/{id}', [OrderController::class, 'admDestroy']); // Удалить заказ (админ)
-    });
+// Маршруты для администраторов
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::get('/admin/orders', [OrderController::class, 'admIndex']); // Получение всех заказов
+    Route::get('/admin/orders/{id}', [OrderController::class, 'admShow']); // Получение конкретного заказа
+    Route::post('/admin/orders', [OrderController::class, 'admStore']); // Создание заказа от имени пользователя
+    Route::put('/admin/orders/{id}', [OrderController::class, 'admUpdate']); // Обновление заказа
+    Route::delete('/admin/orders/{id}', [OrderController::class, 'admDestroy']); // Удаление заказа
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -97,10 +97,18 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/pay', [PaymentController::class, 'pay']);
-    Route::post('/webhook', [PaymentController::class, 'webhook']);
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Создание платежа
+    Route::post('/payments', [PaymentController::class, 'pay']);
+
+    // Проверка статуса платежа
+    Route::get('/payments/status', [PaymentController::class, 'checkPaymentStatus']);
+
+    // Отмена платежа
+    Route::post('/payments/cancel', [PaymentController::class, 'cancelPayment']);
 });
 
+// Webhook от YooKassa (без аутентификации)
+Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
+
 Route::get('/order/payment/success/{orderId}', [OrderController::class, 'confirmPayment'])->name('order.payment.success');
-Route::post('/yookassa/webhook', [OrderController::class, 'yookassaWebhook']);
