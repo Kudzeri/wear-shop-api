@@ -52,8 +52,12 @@ class ProductResource extends Resource
                     ->directory('products')
                     ->reorderable()
                     ->moveFiles()
-                    ->afterStateUpdated(fn ($state, $record) => $record?->syncImages($state)),
-
+                    ->preserveFilenames()
+                    ->afterStateUpdated(function ($state, $record) {
+                        if ($record) {
+                            $record->syncImagesAdm($state); // Синхронизация изображений
+                        }
+                    }),
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
                     ->disk('public')

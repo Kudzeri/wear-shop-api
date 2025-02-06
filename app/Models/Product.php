@@ -91,6 +91,19 @@ class Product extends Model
         }
     }
 
+    public function syncImagesAdm(?array $imagePaths): void
+    {
+        if ($imagePaths === null) {
+            return;
+        }
+
+        $this->images()->delete(); // Удаляем старые изображения
+
+        foreach ($imagePaths as $path) {
+            $this->images()->create(['image_path' => 'products/' . $path]);
+        }
+    }
+
     public function setVideoFileAttribute($file)
     {
         if ($file) {
