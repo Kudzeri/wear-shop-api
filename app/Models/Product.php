@@ -6,14 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
         'category_id',
-        'image_urls',
         'video_url',
         'description',
         'composition_care',
@@ -23,7 +24,6 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'image_urls' => 'array',
         'preference' => 'array',
         'measurements' => 'array',
     ];
@@ -43,8 +43,22 @@ class Product extends Model
         return $this->belongsToMany(User::class, 'wishlists');
     }
 
-    public function category():BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    public function syncImages(array $imagePaths): void
+    {
+        $this->images()->delete(); // Удаляем старые изображения
+        foreach ($imagePaths as $path) {
+            $this->images()->create(['image_path' => $path]);
+        }
+    }
+
 }

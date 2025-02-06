@@ -14,15 +14,25 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('category_id');
-            $table->json('image_urls')->nullable();
+            $table->unsignedBigInteger('category_id');
             $table->string('video_url')->nullable();
-            $table->string('price')->default(0);
-            $table->string('description');
-            $table->string('composition_care');
-            $table->json('preference');
-            $table->json('measurements');
+            $table->decimal('price', 10, 2)->default(0);
+            $table->text('description');
+            $table->text('composition_care');
+            $table->json('preference')->nullable();
+            $table->json('measurements')->nullable();
             $table->timestamps();
+
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+        });
+
+        Schema::create('product_images', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_id');
+            $table->string('image_path'); // Хранение пути к изображению
+            $table->timestamps();
+
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 
@@ -31,6 +41,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('product_images');
         Schema::dropIfExists('products');
     }
 };

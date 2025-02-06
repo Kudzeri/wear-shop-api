@@ -45,13 +45,14 @@ class ProductResource extends Resource
                     ->label('Описание товара')
                     ->required(),
 
-                FileUpload::make('image_files')
+                FileUpload::make('images')
                     ->label('Изображения')
                     ->multiple()
                     ->disk('public')
                     ->directory('products')
-                    ->previewable()
-                    ->reorderable(),
+                    ->reorderable()
+                    ->moveFiles()
+                    ->afterStateUpdated(fn ($state, $record) => $record?->syncImages($state)),
 
                 TextInput::make('video_url')
                     ->label('Ссылка на видео')
@@ -74,11 +75,16 @@ class ProductResource extends Resource
 
                 Forms\Components\KeyValue::make('preference')
                     ->label('Обмеры')
-                    ->nullable(),
+                    ->nullable()
+                    ->formatStateUsing(fn ($state) => is_string($state) ? json_decode($state, true) : $state)
+                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? json_encode($state) : $state),
 
                 Forms\Components\KeyValue::make('measurements')
                     ->label('Параметры модели')
-                    ->nullable(),
+                    ->nullable()
+                    ->formatStateUsing(fn ($state) => is_string($state) ? json_decode($state, true) : $state)
+                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? json_encode($state) : $state),
+
 
                 TextInput::make('price')
                     ->label('Цена')
@@ -94,9 +100,9 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('image_files')
+                ImageColumn::make('images')
                     ->label('Изображение')
-                    ->getStateUsing(fn ($record) => is_array($record->image_files) && count($record->image_files) > 0 ? $record->image_files[0] : null)
+                    ->getStateUsing(fn ($record) => optional($record->images->first())->image_path)
                     ->disk('public')
                     ->square()
                     ->sortable(),
@@ -111,14 +117,6 @@ class ProductResource extends Resource
                     ->sortable()
                     ->searchable(), // Добавлен поиск по категории
 
-                TagsColumn::make('colors.name')
-                    ->label('Цвета')
-                    ->sortable(),
-
-                TagsColumn::make('sizes.name')
-                    ->label('Размеры')
-                    ->sortable(),
-
                 TextColumn::make('created_at')
                     ->label('Дата создания')
                     ->date()
@@ -127,7 +125,7 @@ class ProductResource extends Resource
                 TextColumn::make('price')
                     ->label('Цена')
                     ->sortable()
-                    ->money('руб'),
+                    ->money('К'),
 
             ])
             ->actions([

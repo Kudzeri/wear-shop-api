@@ -11,7 +11,7 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        Product::factory(20)->create()->each(function (Product $product) {
+        Product::factory(100)->create()->each(function (Product $product) {
             $colors = Color::inRandomOrder()->limit(rand(1, 3))->get();
             $product->colors()->attach($colors);
 

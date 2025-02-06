@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductImage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ProductFactory extends Factory
@@ -12,7 +13,6 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
-
         $clothes = [
             'Футболка "Rich as"',
             'Джинсы "Levi\'s 501"',
@@ -41,15 +41,6 @@ class ProductFactory extends Factory
             'Перчатки "The North Face Etip"',
         ];
 
-        $images = [
-            'https://www.pokupkalux.ru/upload/Image4text/26905/20.jpg',
-            'https://i.pinimg.com/736x/50/be/d1/50bed10e27431c730175115e893be124.jpg',
-            'https://i.pinimg.com/originals/4a/04/94/4a04941f85aa749ea9f9d631e4be2872.jpg',
-            'https://i.pinimg.com/736x/3d/93/35/3d9335b0c2bcd03c6d20c32d02fd4f71--italian-chic-italian-fashion.jpg',
-            'https://i.pinimg.com/originals/38/bd/48/38bd4886f0544ea8a5ff1673206f28a5.jpg',
-            'https://i.pinimg.com/originals/a0/42/ab/a042ab081fbe0a5ca4974dfa3a94cab6.jpg',
-            'https://i.pinimg.com/originals/38/44/0a/38440a9b4e767f4c18b31e651457c10c.jpg'
-        ];
 
         $video_links = [
             "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -67,22 +58,42 @@ class ProductFactory extends Factory
         return [
             'name' => $this->faker->randomElement($clothes),
             'category_id' => Category::inRandomOrder()->first()->id ?? Category::factory(),
-            'image_urls' => json_encode([
-                $this->faker->randomElement($images),
-                $this->faker->randomElement($images)
-            ]),
             'video_url' => $this->faker->randomElement($video_links),
             'description' => $this->faker->sentence(15),
             'composition_care' => '100% хлопок, машинная стирка при 30°',
-            'price' => $this->faker->numberBetween(1000,45000),
-            'preference' => json_encode([
-                'S' => ['длина' => 60, 'обхват_груди' => 90],
-                'M' => ['длина' => 62, 'обхват_груди' => 94],
-                'L' => ['длина' => 64, 'обхват_груди' => 98]
-            ]),
-            'measurements' => json_encode([
-                'S' => ['длина' => 60, 'обхват_груди' => 90]
-            ])
+            'price' => $this->faker->numberBetween(1000, 45000),
+
+            'preference' => [
+                'S' => ['длина 60, обхват груди 90'],
+                'M' => ['длина 62, обхват груди 94'],
+                'L' => ['длина 64, обхват груди 98']
+            ],
+
+            'measurements' => [
+                'S' => ['длина 60, обхват груди 90']
+            ]
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (Product $product) {
+            $images = [
+                'https://www.pokupkalux.ru/upload/Image4text/26905/20.jpg',
+                'https://i.pinimg.com/736x/50/be/d1/50bed10e27431c730175115e893be124.jpg',
+                'https://i.pinimg.com/originals/4a/04/94/4a04941f85aa749ea9f9d631e4be2872.jpg',
+                'https://i.pinimg.com/736x/3d/93/35/3d9335b0c2bcd03c6d20c32d02fd4f71--italian-chic-italian-fashion.jpg',
+                'https://i.pinimg.com/originals/38/bd/48/38bd4886f0544ea8a5ff1673206f28a5.jpg',
+                'https://i.pinimg.com/originals/a0/42/ab/a042ab081fbe0a5ca4974dfa3a94cab6.jpg',
+                'https://i.pinimg.com/originals/38/44/0a/38440a9b4e767f4c18b31e651457c10c.jpg'
+            ];
+
+            for ($i = 0; $i < 3; $i++) {
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $this->faker->randomElement($images)
+                ]);
+            }
+        });
     }
 }
