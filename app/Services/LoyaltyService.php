@@ -10,7 +10,12 @@ class LoyaltyService
     public function addPoints(User $user, int $points): void
     {
         $user->increment('loyalty_points', $points);
-        LoyaltyTransaction::create(['user_id' => $user->id, 'points' => $points, 'type' => 'earn', 'description' => 'Начисление баллов']);
+        LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => $points,
+            'type' => 'earn',
+            'description' => 'Начисление баллов'
+        ]);
 
         $this->updateUserLevel($user);
     }
@@ -22,7 +27,12 @@ class LoyaltyService
         }
 
         $user->decrement('loyalty_points', $points);
-        LoyaltyTransaction::create(['user_id' => $user->id, 'points' => -$points, 'type' => 'redeem', 'description' => 'Списание баллов']);
+        LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => -$points,
+            'type' => 'redeem',
+            'description' => 'Списание баллов'
+        ]);
 
         return true;
     }
@@ -44,15 +54,26 @@ class LoyaltyService
 
     public function applyDiscount(User $user, int $totalAmount): array
     {
-        $discountPercentage = $user->loyaltyLevel->discount_percentage ?? 0;
+        $loyaltyLevel = $user->loyaltyLevel;
+
+        // Проверяем, есть ли уровень у пользователя
+        $discountPercentage = $loyaltyLevel ? $loyaltyLevel->discount_percentage : 0;
         $discountAmount = ($totalAmount * $discountPercentage) / 100;
 
-        $pointsToRedeem = min($user->loyalty_points, $totalAmount);
+        // Определяем количество баллов для списания
+        $pointsToRedeem = min($user->loyalty_points, $totalAmount - $discountAmount);
         $finalAmount = $totalAmount - $discountAmount - $pointsToRedeem;
 
         if ($pointsToRedeem > 0) {
             $this->redeemPoints($user, $pointsToRedeem);
         }
+
+        LoyaltyTransaction::create([
+            'user_id' => $user->id,
+            'points' => -$pointsToRedeem,
+            'type' => 'discount',
+            'description' => "Скидка {$discountPercentage}% + {$pointsToRedeem} баллов"
+        ]);
 
         return [
             'original_amount' => $totalAmount,
@@ -65,7 +86,10 @@ class LoyaltyService
 
     private function updateUserLevel(User $user): void
     {
-        $newLevel = LoyaltyLevel::where('min_points', '<=', $user->loyalty_points)->orderByDesc('min_points')->first();
+        $newLevel = LoyaltyLevel::where('min_points', '<=', $user->loyalty_points)
+            ->orderByDesc('min_points')
+            ->first();
+
         if ($newLevel && $user->loyalty_level_id !== $newLevel->id) {
             $user->update(['loyalty_level_id' => $newLevel->id]);
         }
