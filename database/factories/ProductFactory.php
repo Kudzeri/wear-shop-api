@@ -74,6 +74,7 @@ class ProductFactory extends Factory
             'video_url' => $this->faker->randomElement($video_links),
             'description' => $this->faker->sentence(15),
             'composition_care' => '100% хлопок, машинная стирка при 30°',
+            'price' => $this->faker->numberBetween(1000,45000),
             'preference' => json_encode([
                 'S' => ['длина' => 60, 'обхват_груди' => 90],
                 'M' => ['длина' => 62, 'обхват_груди' => 94],

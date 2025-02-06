@@ -76,6 +76,14 @@ class ProductResource extends Resource
                 Forms\Components\KeyValue::make('measurements')
                     ->label('Параметры модели')
                     ->nullable(),
+
+                TextInput::make('price')
+                    ->label('Цена')
+                    ->required()
+                    ->numeric()
+                    ->prefix('руб.')
+                    ->minValue(0),
+
             ]);
     }
 
@@ -111,6 +119,11 @@ class ProductResource extends Resource
                     ->label('Дата создания')
                     ->date()
                     ->sortable(),
+                TextColumn::make('price')
+                    ->label('Цена')
+                    ->sortable()
+                    ->money('руб'),
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

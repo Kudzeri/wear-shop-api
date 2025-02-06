@@ -18,6 +18,7 @@ class Product extends Model
         'composition_care',
         'preference',
         'measurements',
+        'price'
     ];
 
     protected $casts = [

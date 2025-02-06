@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('category_id');
             $table->json('image_urls')->nullable();
             $table->string('video_url')->nullable();
+            $table->string('price')->default(0);
             $table->string('description');
             $table->string('composition_care');
             $table->json('preference');
