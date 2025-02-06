@@ -6,13 +6,8 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
-/**
- * @OA\Tag(
- *     name="Categories",
- *     description="CRUD операции с категориями"
- * )
- */
 class CategoryController extends Controller
 {
     /**
@@ -23,23 +18,22 @@ class CategoryController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Список категорий",
-     *         @OA\JsonContent(type="array", @OA\Items(
-     *             @OA\Property(property="slug", type="string", example="electronics"),
-     *             @OA\Property(property="title", type="string", example="Электроника"),
-     *             @OA\Property(property="category_id", type="integer", nullable=true, example=null)
-     *         ))
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Category"))
      *     )
      * )
      */
+
     public function index(): JsonResponse
     {
-        return response()->json(Category::all());
+        $categories = Category::with('children')->get();
+        return response()->json($categories);
     }
 
     /**
      * @OA\Post(
      *     path="/api/categories",
      *     summary="Создание новой категории",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Categories"},
      *     @OA\RequestBody(
      *         required=true,
@@ -47,19 +41,27 @@ class CategoryController extends Controller
      *             required={"slug", "title"},
      *             @OA\Property(property="slug", type="string", example="smartphones"),
      *             @OA\Property(property="title", type="string", example="Смартфоны"),
-     *             @OA\Property(property="parent_slug", type="string", example="electronics", nullable=true)
+     *             @OA\Property(property="parent_slug", type="string", nullable=true, example="electronics"),
+     *             @OA\Property(property="image", type="string", nullable=true, example="https://example.com/category.jpg")
      *         )
      *     ),
      *     @OA\Response(response=201, description="Категория создана"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
      *     @OA\Response(response=422, description="Ошибка валидации")
      * )
      */
+
     public function store(Request $request): JsonResponse
     {
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         $validated = $request->validate([
             'slug' => 'required|string|unique:categories,slug|max:255',
             'title' => 'required|string|max:255',
-            'parent_slug' => 'nullable|string|exists:categories,slug'
+            'parent_slug' => 'nullable|string|exists:categories,slug',
+            'image' => 'nullable|string|max:255'
         ]);
 
         $parent = $validated['parent_slug'] ? Category::where('slug', $validated['parent_slug'])->first() : null;
@@ -67,7 +69,8 @@ class CategoryController extends Controller
         $category = Category::create([
             'slug' => $validated['slug'],
             'title' => $validated['title'],
-            'category_id' => $parent?->id
+            'category_id' => $parent?->id,
+            'image' => $validated['image'] ?? null,
         ]);
 
         return response()->json($category, 201);
@@ -78,20 +81,16 @@ class CategoryController extends Controller
      *     path="/api/categories/{slug}",
      *     summary="Получение информации о категории",
      *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="slug",
-     *         in="path",
-     *         required=true,
-     *         description="Slug категории",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(response=200, description="Информация о категории"),
+     *     @OA\Parameter(name="slug", in="path", required=true, description="Slug категории", @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="Информация о категории", @OA\JsonContent(ref="#/components/schemas/Category")),
      *     @OA\Response(response=404, description="Категория не найдена")
      * )
      */
+
     public function show(string $slug): JsonResponse
     {
-        $category = Category::where('slug', $slug)->first();
+        $category = Category::where('slug', $slug)->with(['children', 'products'])->first();
+
         if (!$category) {
             return response()->json(['message' => 'Категория не найдена'], 404);
         }
@@ -103,28 +102,30 @@ class CategoryController extends Controller
      * @OA\Put(
      *     path="/api/categories/{slug}",
      *     summary="Обновление категории",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="slug",
-     *         in="path",
-     *         required=true,
-     *         description="Slug категории",
-     *         @OA\Schema(type="string")
-     *     ),
+     *     @OA\Parameter(name="slug", in="path", required=true, description="Slug категории", @OA\Schema(type="string")),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             @OA\Property(property="title", type="string", example="Обновленная категория"),
-     *             @OA\Property(property="parent_slug", type="string", example="electronics", nullable=true)
+     *             @OA\Property(property="parent_slug", type="string", nullable=true, example="electronics"),
+     *             @OA\Property(property="image", type="string", nullable=true, example="https://example.com/category.jpg")
      *         )
      *     ),
      *     @OA\Response(response=200, description="Категория обновлена"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
      *     @OA\Response(response=404, description="Категория не найдена"),
      *     @OA\Response(response=422, description="Ошибка валидации")
      * )
      */
+
     public function update(Request $request, string $slug): JsonResponse
     {
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         $category = Category::where('slug', $slug)->first();
         if (!$category) {
             return response()->json(['message' => 'Категория не найдена'], 404);
@@ -132,14 +133,16 @@ class CategoryController extends Controller
 
         $validated = $request->validate([
             'title' => 'string|max:255',
-            'parent_slug' => 'nullable|string|exists:categories,slug'
+            'parent_slug' => 'nullable|string|exists:categories,slug',
+            'image' => 'nullable|string|max:255'
         ]);
 
         $parent = $validated['parent_slug'] ? Category::where('slug', $validated['parent_slug'])->first() : null;
 
         $category->update([
             'title' => $validated['title'] ?? $category->title,
-            'category_id' => $parent?->id
+            'category_id' => $parent?->id,
+            'image' => $validated['image'] ?? $category->image,
         ]);
 
         return response()->json($category);
@@ -149,20 +152,21 @@ class CategoryController extends Controller
      * @OA\Delete(
      *     path="/api/categories/{slug}",
      *     summary="Удаление категории",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Categories"},
-     *     @OA\Parameter(
-     *         name="slug",
-     *         in="path",
-     *         required=true,
-     *         description="Slug категории",
-     *         @OA\Schema(type="string")
-     *     ),
+     *     @OA\Parameter(name="slug", in="path", required=true, description="Slug категории", @OA\Schema(type="string")),
      *     @OA\Response(response=204, description="Категория удалена"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
      *     @OA\Response(response=404, description="Категория не найдена")
      * )
      */
+
     public function destroy(string $slug): JsonResponse
     {
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         $category = Category::where('slug', $slug)->first();
         if (!$category) {
             return response()->json(['message' => 'Категория не найдена'], 404);
@@ -184,10 +188,11 @@ class CategoryController extends Controller
      *         description="Slug категории",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response=200, description="Родительская категория"),
+     *     @OA\Response(response=200, description="Родительская категория", @OA\JsonContent(ref="#/components/schemas/Category")),
      *     @OA\Response(response=404, description="Категория не найдена")
      * )
      */
+
     public function getParent(string $slug): JsonResponse
     {
         $category = Category::where('slug', $slug)->with('parent')->first();
@@ -210,10 +215,11 @@ class CategoryController extends Controller
      *         description="Slug категории",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response=200, description="Список подкатегорий"),
+     *     @OA\Response(response=200, description="Список подкатегорий", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Category"))),
      *     @OA\Response(response=404, description="Категория не найдена")
      * )
      */
+
     public function getChildren(string $slug): JsonResponse
     {
         $category = Category::where('slug', $slug)->with('children')->first();
@@ -228,7 +234,7 @@ class CategoryController extends Controller
      * @OA\Get(
      *     path="/api/categories/{id}/products",
      *     summary="Получить все товары категории и её подкатегорий",
-     *     tags={"Категории"},
+     *     tags={"Categories"},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -239,35 +245,23 @@ class CategoryController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Список товаров",
-     *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(ref="#/components/schemas/Product")
-     *         )
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
      *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Категория не найдена"
-     *     )
+     *     @OA\Response(response=404, description="Категория не найдена")
      * )
      */
-    public function getAllProducts($categoryId)
+
+    public function getAllProducts($categoryId): JsonResponse
     {
         $category = Category::with('children')->findOrFail($categoryId);
 
         $categoryIds = $this->getAllCategoryIds($category);
-
-        $products = Product::whereIn('category_id', $categoryIds)->get();
+        $products = Product::whereIn('category_id', $categoryIds)->with('images')->get();
 
         return response()->json($products);
     }
 
-    /**
-     * Получает все ID текущей и дочерних категорий рекурсивно.
-     *
-     * @param Category $category
-     * @return array
-     */
-    private function getAllCategoryIds($category)
+    private function getAllCategoryIds($category): array
     {
         $ids = [$category->id];
 

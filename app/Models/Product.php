@@ -7,6 +7,36 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+/**
+ * @OA\Schema(
+ *     schema="Product",
+ *     type="object",
+ *     title="Продукт",
+ *     description="Модель продукта",
+ *     required={"id", "name", "category_id", "description", "price"},
+ *     @OA\Property(property="id", type="integer", example=1),
+ *     @OA\Property(property="name", type="string", example="Футболка 'Rich as'"),
+ *     @OA\Property(property="category_id", type="integer", example=18),
+ *     @OA\Property(property="description", type="string", example="Описание продукта"),
+ *     @OA\Property(property="video_url", type="string", nullable=true, example="https://example.com/video.mp4"),
+ *     @OA\Property(property="price", type="number", format="float", example=5760),
+ *     @OA\Property(property="image_urls", type="array", @OA\Items(type="string", example="https://example.com/image1.jpg")),
+ *     @OA\Property(property="preference", type="object",
+ *         @OA\Property(property="S", type="object",
+ *             @OA\Property(property="длина", type="integer", example=60),
+ *             @OA\Property(property="обхват_груди", type="integer", example=90)
+ *         )
+ *     ),
+ *     @OA\Property(property="measurements", type="object",
+ *         @OA\Property(property="S", type="object",
+ *             @OA\Property(property="длина", type="integer", example=60),
+ *             @OA\Property(property="обхват_груди", type="integer", example=90)
+ *         )
+ *     ),
+ *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-02-06T12:34:56Z"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-02-06T12:34:56Z")
+ * )
+ */
 
 class Product extends Model
 {

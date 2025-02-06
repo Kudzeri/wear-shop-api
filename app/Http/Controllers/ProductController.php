@@ -3,87 +3,70 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
-/**
- * @OA\Tag(
- *     name="Products",
- *     description="Операции с товарами"
- * )
- */
-/**
- * @OA\Schema(
- *     schema="Product",
- *     type="object",
- *     title="Product",
- *     description="Модель продукта",
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Футболка"),
- *     @OA\Property(property="category_id", type="integer", example=2),
- *     @OA\Property(property="image_urls", type="array", @OA\Items(type="string", example="https://example.com/image1.jpg")),
- *     @OA\Property(property="video_url", type="string", example="https://example.com/video.mp4"),
- *     @OA\Property(property="description", type="string", example="Классическая футболка для повседневной носки"),
- *     @OA\Property(property="composition_care", type="string", example="100% хлопок, машинная стирка при 30°"),
- *     @OA\Property(property="preference", type="object"),
- *     @OA\Property(property="measurements", type="object"),
- *     @OA\Property(property="created_at", type="string", format="date-time"),
- *     @OA\Property(property="updated_at", type="string", format="date-time")
- * )
- */
 class ProductController extends Controller
 {
     /**
      * @OA\Get(
      *     path="/api/products",
-     *     summary="Получить список всех товаров",
+     *     summary="Получить список всех продуктов",
      *     tags={"Products"},
-     *     @OA\Response(response=200, description="Список товаров")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список всех продуктов",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
+     *     )
      * )
      */
+
     public function index(): JsonResponse
     {
-        return response()->json(Product::all(), 200);
+        $products = Product::with('images')->get();
+        return response()->json($products, 200);
     }
 
     /**
      * @OA\Post(
      *     path="/api/products",
-     *     summary="Создать новый товар",
+     *     summary="Создать новый продукт",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Products"},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(
-     *                 required={"name", "category_id", "description"},
-     *                 @OA\Property(property="name", type="string", example="Футболка"),
-     *                 @OA\Property(property="category_id", type="integer", example=1),
-     *                 @OA\Property(property="description", type="string", example="Описание товара"),
-     *                 @OA\Property(property="image_urls", type="array", @OA\Items(type="string"), example={"url1.jpg", "url2.jpg"}),
-     *                 @OA\Property(property="video_url", type="string", example="https://example.com/video.mp4"),
-     *                 @OA\Property(property="image_files", type="array", @OA\Items(type="string", format="binary")),
-     *                 @OA\Property(property="video_file", type="string", format="binary"),
-     *                 @OA\Property(property="preference", type="object", example={"M": {"size": "M", "params": {"длина": 70, "обхват груди": 100}}}),
-     *                 @OA\Property(property="measurements", type="object", example={"M": {"size": "M", "params": {"длина": 70, "обхват груди": 100}}})
-     *             )
+     *         @OA\JsonContent(
+     *             required={"name", "category_id", "description"},
+     *             @OA\Property(property="name", type="string", example="Футболка 'Rich as'"),
+     *             @OA\Property(property="category_id", type="integer", example=18),
+     *             @OA\Property(property="description", type="string", example="Описание продукта"),
+     *             @OA\Property(property="image_files", type="array", @OA\Items(type="string", format="binary")),
+     *             @OA\Property(property="video_file", type="string", format="binary"),
+     *             @OA\Property(property="preference", type="object"),
+     *             @OA\Property(property="measurements", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=201, description="Товар создан"),
+     *     @OA\Response(response=201, description="Продукт успешно создан"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
      *     @OA\Response(response=422, description="Ошибка валидации")
      * )
      */
+
     public function store(Request $request): JsonResponse
     {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         try {
             $data = $request->validate([
                 'name' => 'required|string',
                 'category_id' => 'required|integer|exists:categories,id',
                 'description' => 'required|string',
-                'image_urls' => 'array',
-                'image_urls.*' => 'string|url',
                 'image_files' => 'array',
                 'image_files.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 'video_url' => 'nullable|string|url',
@@ -92,22 +75,28 @@ class ProductController extends Controller
                 'measurements' => 'nullable|array',
             ]);
 
+            $product = Product::create($data);
+
             // Загрузка изображений
-            $uploadedImages = [];
             if ($request->hasFile('image_files')) {
+                $uploadedImages = [];
                 foreach ($request->file('image_files') as $image) {
-                    $uploadedImages[] = Storage::url($image->store('products', 'public'));
+                    $path = $image->store('products', 'public');
+                    $uploadedImages[] = Storage::url($path);
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                    ]);
                 }
             }
-            $data['image_urls'] = array_merge($data['image_urls'] ?? [], $uploadedImages);
 
             // Загрузка видео
             if ($request->hasFile('video_file')) {
-                $data['video_url'] = Storage::url($request->file('video_file')->store('products/videos', 'public'));
+                $videoPath = $request->file('video_file')->store('products/videos', 'public');
+                $product->update(['video_url' => Storage::url($videoPath)]);
             }
 
-            $product = Product::create($data);
-            return response()->json($product, 201);
+            return response()->json($product->load('images'), 201);
         } catch (ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         }
@@ -116,22 +105,35 @@ class ProductController extends Controller
     /**
      * @OA\Put(
      *     path="/api/products/{id}",
-     *     summary="Обновить товар",
+     *     summary="Обновить информацию о продукте",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Products"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID продукта", @OA\Schema(type="integer")),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\MediaType(
-     *             mediaType="multipart/form-data",
-     *             @OA\Schema(ref="#/components/schemas/Product")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Обновленный продукт"),
+     *             @OA\Property(property="category_id", type="integer", example=18),
+     *             @OA\Property(property="description", type="string", example="Новое описание"),
+     *             @OA\Property(property="image_files", type="array", @OA\Items(type="string", format="binary")),
+     *             @OA\Property(property="video_file", type="string", format="binary"),
+     *             @OA\Property(property="preference", type="object"),
+     *             @OA\Property(property="measurements", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Товар обновлен"),
-     *     @OA\Response(response=404, description="Товар не найден")
+     *     @OA\Response(response=200, description="Продукт обновлен"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
+     *     @OA\Response(response=404, description="Продукт не найден"),
+     *     @OA\Response(response=422, description="Ошибка валидации")
      * )
      */
+
     public function update(Request $request, int $id): JsonResponse
     {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Товар не найден'], 404);
@@ -141,8 +143,6 @@ class ProductController extends Controller
             'name' => 'sometimes|string',
             'category_id' => 'sometimes|integer|exists:categories,id',
             'description' => 'sometimes|string',
-            'image_urls' => 'sometimes|array',
-            'image_urls.*' => 'string|url',
             'image_files' => 'sometimes|array',
             'image_files.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'video_url' => 'nullable|string|url',
@@ -151,57 +151,77 @@ class ProductController extends Controller
             'measurements' => 'nullable|array',
         ]);
 
+        $product->update($data);
+
+        // Обновление изображений
         if ($request->hasFile('image_files')) {
             $uploadedImages = [];
             foreach ($request->file('image_files') as $image) {
-                $uploadedImages[] = Storage::url($image->store('products', 'public'));
+                $path = $image->store('products', 'public');
+                $uploadedImages[] = Storage::url($path);
+                ProductImage::create([
+                    'product_id' => $product->id,
+                    'image_path' => $path,
+                ]);
             }
-            $data['image_urls'] = array_merge($data['image_urls'] ?? $product->image_urls, $uploadedImages);
         }
 
+        // Обновление видео
         if ($request->hasFile('video_file')) {
-            $data['video_url'] = Storage::url($request->file('video_file')->store('products/videos', 'public'));
+            $videoPath = $request->file('video_file')->store('products/videos', 'public');
+            $product->update(['video_url' => Storage::url($videoPath)]);
         }
 
-        $product->update($data);
-        return response()->json($product, 200);
+        return response()->json($product->load('images'), 200);
     }
 
     /**
      * @OA\Get(
      *     path="/api/products/{id}",
-     *     summary="Получить товар по ID",
+     *     summary="Получить информацию о продукте",
      *     tags={"Products"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=200, description="Детали товара"),
-     *     @OA\Response(response=404, description="Товар не найден")
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID продукта", @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Информация о продукте", @OA\JsonContent(ref="#/components/schemas/Product")),
+     *     @OA\Response(response=404, description="Продукт не найден")
      * )
      */
+
     public function show(int $id): JsonResponse
     {
-        $product = Product::find($id);
+        $product = Product::with('images')->find($id);
         if (!$product) {
             return response()->json(['message' => 'Товар не найден'], 404);
         }
         return response()->json($product, 200);
     }
-
-
     /**
      * @OA\Delete(
      *     path="/api/products/{id}",
-     *     summary="Удалить товар",
+     *     summary="Удалить продукт",
+     *     security={{"bearerAuth": {}}},
      *     tags={"Products"},
-     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
-     *     @OA\Response(response=204, description="Товар удален"),
-     *     @OA\Response(response=404, description="Товар не найден")
+     *     @OA\Parameter(name="id", in="path", required=true, description="ID продукта", @OA\Schema(type="integer")),
+     *     @OA\Response(response=204, description="Продукт удален"),
+     *     @OA\Response(response=403, description="Доступ запрещен"),
+     *     @OA\Response(response=404, description="Продукт не найден")
      * )
      */
+
     public function destroy(int $id): JsonResponse
     {
+        if (!Auth::check() || Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Доступ запрещен'], 403);
+        }
+
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Товар не найден'], 404);
+        }
+
+        // Удаляем изображения
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
+            $image->delete();
         }
 
         $product->delete();
@@ -211,18 +231,53 @@ class ProductController extends Controller
     /**
      * @OA\Get(
      *     path="/api/products/size/{size_slug}",
-     *     summary="Получить товары по размеру",
+     *     summary="Получить продукты по размеру",
      *     tags={"Products"},
      *     @OA\Parameter(name="size_slug", in="path", required=true, description="Slug размера", @OA\Schema(type="string")),
-     *     @OA\Response(response=200, description="Список товаров"),
-     *     @OA\Response(response=404, description="Размер не найден")
+     *     @OA\Response(response=200, description="Список продуктов", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))),
+     *     @OA\Response(response=404, description="Продукт не найден")
      * )
      */
+
     public function getBySize(string $size_slug): JsonResponse
     {
         $products = Product::whereHas('sizes', function ($query) use ($size_slug) {
             $query->where('slug', $size_slug);
-        })->get();
+        })->with('images')->get();
+
+        return response()->json($products, 200);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/products/color/{color_id}",
+     *     summary="Получить продукты по цвету",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="color_id",
+     *         in="path",
+     *         required=true,
+     *         description="Id цвета",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список продуктов",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
+     *     ),
+     *     @OA\Response(response=404, description="Продукт не найден")
+     * )
+     */
+
+    public function getByColor(string $color_id): JsonResponse
+    {
+        $products = Product::whereHas('colors', function ($query) use ($color_id) {
+            $query->where('id', $color_id);
+        })->with('images')->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Продукты с данным цветом не найдены'], 404);
+        }
 
         return response()->json($products, 200);
     }
