@@ -8,6 +8,7 @@ use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
@@ -39,30 +40,38 @@ class CategoryResource extends Resource
                     ->nullable()
                     ->searchable(),
                 FileUpload::make('image')
-                ->label('Изображение')
+                    ->label('Изображение')
                     ->disk('public')
                     ->directory('categories')
+                    ->previewable()
+                    ->reorderable()
+                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName()) // Корректное сохранение пути
+
+
+
             ]);
     }
+
 
     public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->label('Изображение')
+                    ->disk('public')
+                    ->size(50), // Укажи размер превью
                 TextColumn::make('title')
                     ->label('Название категории')
                     ->searchable(),
-
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->sortable(),
-
                 TextColumn::make('parent.title')
                     ->label('Родительская категория')
                     ->sortable(),
             ])
-            ->filters([
-            ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),

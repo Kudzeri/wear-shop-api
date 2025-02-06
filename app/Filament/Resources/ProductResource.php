@@ -12,12 +12,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TagsColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Tables\Filters\SelectFilter;
 
 class ProductResource extends Resource
 {
@@ -47,7 +46,9 @@ class ProductResource extends Resource
                     ->label('Изображения')
                     ->multiple()
                     ->disk('public')
-                    ->directory('products'),
+                    ->directory('products')
+                    ->previewable() // Добавляет предпросмотр изображений
+                    ->reorderable(), // Позволяет менять порядок изображений
 
                 TextInput::make('video_url')
                     ->label('Ссылка на видео')
@@ -82,6 +83,13 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('image_files')
+                    ->label('Изображение')
+                    ->getStateUsing(fn ($record) => is_array($record->image_files) && count($record->image_files) > 0 ? $record->image_files[0] : null)
+                    ->disk('public')
+                    ->square()
+                    ->sortable(),
+
                 TextColumn::make('name')
                     ->label('Название товара')
                     ->sortable()
@@ -103,9 +111,6 @@ class ProductResource extends Resource
                     ->label('Дата создания')
                     ->date()
                     ->sortable(),
-            ])
-            ->filters([
-
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
