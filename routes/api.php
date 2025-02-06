@@ -20,6 +20,14 @@ Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth:sanctum');
 Route::middleware('auth:sanctum')->get('/profile', [AuthController::class, 'profile']);
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/avatar', [AuthController::class, 'updateAvatar']);
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
+    Route::get('/user/loyalty', [AuthController::class, 'getLoyaltyInfo']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+});
+
+
 Route::apiResource('colors', ColorController::class);
 Route::get('colors/{id}/products', [ColorController::class, 'getProducts']);
 
