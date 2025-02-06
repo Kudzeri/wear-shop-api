@@ -91,10 +91,10 @@ php artisan serve
 | Метод  | URL | Описание | Аутентификация |
 |--------|-----|----------|----------------|
 | `GET` | `/api/products` | Получить список всех товаров | ❌ |
-| `POST` | `/api/products` | Создать новый товар | ❌ |
+| `POST` | `/api/products` | Создать новый товар | ✅ (Bearer) |
 | `GET` | `/api/products/{id}` | Получить товар по ID | ❌ |
-| `PUT` | `/api/products/{id}` | Обновить товар | ❌ |
-| `DELETE` | `/api/products/{id}` | Удалить товар | ❌ |
+| `PUT` | `/api/products/{id}` | Обновить товар | ✅ (Bearer) |
+| `DELETE` | `/api/products/{id}` | Удалить товар | ✅ (Bearer) |
 | `GET` | `/api/products/size/{size_slug}` | Получить товары по размеру | ❌ |
 
 ---
