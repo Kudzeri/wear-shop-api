@@ -8,6 +8,7 @@ use App\Models\User;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 use Filament\Forms\Form;
 use Filament\Tables\Columns\TextColumn;
@@ -69,6 +70,7 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Имя')->limit(50),
                 TextColumn::make('surname')->label('Фамилия')->limit(50),
+                ImageColumn::make('avatar_url')->label('Аватар'),
                 TextColumn::make('email')->label('Электронная почта')->limit(50),
                 TextColumn::make('phone')->label('Телефон')->limit(50),
                 TextColumn::make('created_at')->label('Дата создания')->dateTime(),
