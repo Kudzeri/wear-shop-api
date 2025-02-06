@@ -2,9 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoyaltyLevel extends Model
 {
-    protected $fillable = ['name', 'min_points', 'discount'];
+    use HasFactory;
+
+    protected $fillable = ['name', 'min_points', 'discount_percentage'];
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
 }

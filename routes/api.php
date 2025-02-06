@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/loyalty/use-points', [LoyaltyController::class, 'usePoints']);
     Route::get('/loyalty/points', [LoyaltyController::class, 'getUserPoints']);
     Route::get('/loyalty/level', [LoyaltyController::class, 'getUserLevel']);
+    Route::get('/loyalty/apply-discount', [LoyaltyController::class, 'applyDiscount']);
 });
 
 

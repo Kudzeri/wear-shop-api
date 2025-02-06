@@ -83,4 +83,14 @@ class User extends Authenticatable
         return $this->hasMany(LoyaltyPoint::class);
     }
 
+    public function transactions()
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    public function loyaltyLevel()
+    {
+        return $this->belongsTo(LoyaltyLevel::class, 'loyalty_level_id');
+    }
+
 }
