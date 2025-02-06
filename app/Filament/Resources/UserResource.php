@@ -60,7 +60,8 @@ class UserResource extends Resource
                     ->password()
                     ->required(fn ($get) => !$get('id'))
                     ->minLength(8)
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->dehydrated(fn ($state) => filled($state)),
             ]);
     }
 

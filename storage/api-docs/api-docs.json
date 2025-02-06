@@ -516,6 +516,238 @@
                 ]
             }
         },
+        "/api/user/avatar": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Изменение аватара пользователя",
+                "description": "Позволяет пользователю загрузить новый аватар.",
+                "operationId": "27547e6cb7cb289559ffcbcb662bf55a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "avatar"
+                                ],
+                                "properties": {
+                                    "avatar": {
+                                        "description": "Файл изображения",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Аватар обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "avatar_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка загрузки файла"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/password": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обновление пароля",
+                "description": "Позволяет пользователю изменить свой пароль.",
+                "operationId": "0a2d0350f37a0e08de86e1956f48a442",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "oldpassword123"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "newpassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Пароль обновлен"
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "403": {
+                        "description": "Текущий пароль не совпадает"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/loyalty": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Получение информации о лояльности",
+                "description": "Возвращает текущий уровень лояльности пользователя и его скидку.",
+                "operationId": "d7e2c1198a4b5fef91b3d2858c671eb6",
+                "responses": {
+                    "200": {
+                        "description": "Информация о лояльности",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "level": {
+                                            "type": "string",
+                                            "example": "Gold"
+                                        },
+                                        "discount_percentage": {
+                                            "type": "integer",
+                                            "example": 10
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/profile": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обновление данных профиля",
+                "description": "Позволяет пользователю изменить свои личные данные.",
+                "operationId": "4a75ccb2b8a3aa3f7230a2a2dd1de04d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+77011234567"
+                                    },
+                                    "avatar": {
+                                        "description": "Файл изображения (jpeg, png, jpg, gif)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Профиль обновлен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Профиль обновлен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "500": {
+                        "description": "Ошибка сервера"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/categories": {
             "get": {
                 "tags": [
@@ -531,22 +763,7 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "properties": {
-                                            "slug": {
-                                                "type": "string",
-                                                "example": "electronics"
-                                            },
-                                            "title": {
-                                                "type": "string",
-                                                "example": "Электроника"
-                                            },
-                                            "category_id": {
-                                                "type": "integer",
-                                                "example": null,
-                                                "nullable": true
-                                            }
-                                        },
-                                        "type": "object"
+                                        "$ref": "#/components/schemas/Category"
                                     }
                                 }
                             }
@@ -582,6 +799,11 @@
                                         "type": "string",
                                         "example": "electronics",
                                         "nullable": true
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "example": "https://example.com/category.jpg",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -593,10 +815,18 @@
                     "201": {
                         "description": "Категория создана"
                     },
+                    "403": {
+                        "description": "Доступ запрещен"
+                    },
                     "422": {
                         "description": "Ошибка валидации"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/categories/{slug}": {
@@ -619,7 +849,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Информация о категории"
+                        "description": "Информация о категории",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Category"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Категория не найдена"
@@ -657,6 +894,11 @@
                                         "type": "string",
                                         "example": "electronics",
                                         "nullable": true
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "example": "https://example.com/category.jpg",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -668,13 +910,21 @@
                     "200": {
                         "description": "Категория обновлена"
                     },
+                    "403": {
+                        "description": "Доступ запрещен"
+                    },
                     "404": {
                         "description": "Категория не найдена"
                     },
                     "422": {
                         "description": "Ошибка валидации"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
                 "tags": [
@@ -697,10 +947,18 @@
                     "204": {
                         "description": "Категория удалена"
                     },
+                    "403": {
+                        "description": "Доступ запрещен"
+                    },
                     "404": {
                         "description": "Категория не найдена"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/categories/{slug}/parent": {
@@ -723,7 +981,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Родительская категория"
+                        "description": "Родительская категория",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Category"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Категория не найдена"
@@ -751,7 +1016,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Список подкатегорий"
+                        "description": "Список подкатегорий",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Category"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Категория не найдена"
@@ -762,7 +1037,7 @@
         "/api/categories/{id}/products": {
             "get": {
                 "tags": [
-                    "Категории"
+                    "Categories"
                 ],
                 "summary": "Получить все товары категории и её подкатегорий",
                 "operationId": "51e119cb91b10faf5102a6fdc20548eb",
@@ -1058,36 +1333,55 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Баллы успешно списаны",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Баллы успешно списаны"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Баллы успешно списаны"
                     },
                     "400": {
-                        "description": "Ошибка списания баллов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Недостаточно баллов."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
+                        "description": "Недостаточно баллов"
+                    },
+                    "401": {
+                        "description": "Неавторизованный доступ"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/loyalty/earn-points": {
+            "post": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Начислить баллы пользователю",
+                "operationId": "3c1e1050aa8d0262057eb2c79c940316",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "points"
+                                ],
+                                "properties": {
+                                    "points": {
+                                        "description": "Количество начисляемых баллов",
+                                        "type": "integer",
+                                        "example": 50
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Баллы успешно начислены"
+                    },
+                    "401": {
+                        "description": "Неавторизованный доступ"
                     }
                 },
                 "security": [
@@ -1106,20 +1400,26 @@
                 "operationId": "311743b3f07ee2af9564257be204c475",
                 "responses": {
                     "200": {
-                        "description": "Общее количество баллов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "total_points": {
-                                            "type": "integer",
-                                            "example": 500
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Общее количество баллов"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/loyalty/points-history": {
+            "get": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Получить историю операций с баллами",
+                "operationId": "13a2a16af27da436f407e60ce8175969",
+                "responses": {
+                    "200": {
+                        "description": "История операций с баллами"
                     }
                 },
                 "security": [
@@ -1138,20 +1438,7 @@
                 "operationId": "ee44e7994692e32733b0466dba02216a",
                 "responses": {
                     "200": {
-                        "description": "Текущий уровень лояльности",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "level": {
-                                            "type": "string",
-                                            "example": "Gold"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Текущий уровень лояльности"
                     }
                 },
                 "security": [
@@ -1161,17 +1448,56 @@
                 ]
             }
         },
-        "/orders": {
+        "/api/loyalty/apply-discount": {
+            "post": {
+                "tags": [
+                    "Loyalty"
+                ],
+                "summary": "Применить скидку за баллы и уровень",
+                "operationId": "a35cfb71e01e0f7eb718f9b6dbf01341",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "total_amount"
+                                ],
+                                "properties": {
+                                    "total_amount": {
+                                        "description": "Сумма заказа",
+                                        "type": "integer",
+                                        "example": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Скидка успешно применена"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Получить все заказы текущего пользователя",
-                "description": "Позволяет авторизованному пользователю получить все свои заказы с деталями (продукты, размеры, адрес).",
-                "operationId": "325fd3d55bbe9bb39645269928fa4983",
+                "summary": "Получение всех заказов пользователя",
+                "description": "Возвращает список всех заказов текущего пользователя.",
+                "operationId": "2cd7e03021e72d9d799c12dfe179c865",
                 "responses": {
                     "200": {
-                        "description": "Список заказов успешно получен",
+                        "description": "Список заказов",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1184,36 +1510,7 @@
                         }
                     },
                     "401": {
-                        "description": "Не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Не авторизован"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Заказы не найдены",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Заказы не найдены"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Не авторизован"
                     }
                 },
                 "security": [
@@ -1226,9 +1523,9 @@
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Создать заказ",
-                "description": "Позволяет авторизованному пользователю создать новый заказ.",
-                "operationId": "createOrder",
+                "summary": "Создание заказа",
+                "description": "Создает новый заказ с возможностью использования баллов лояльности.",
+                "operationId": "d690d6834318e9b064df441e854de8b9",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1242,31 +1539,41 @@
                                 "properties": {
                                     "address_id": {
                                         "description": "ID адреса доставки",
-                                        "type": "integer"
-                                    },
-                                    "delivery": {
-                                        "description": "Способ доставки",
-                                        "type": "string"
+                                        "type": "integer",
+                                        "example": 1
                                     },
                                     "items": {
                                         "type": "array",
                                         "items": {
                                             "properties": {
                                                 "product_id": {
-                                                    "description": "ID продукта",
-                                                    "type": "integer"
+                                                    "description": "ID товара",
+                                                    "type": "integer",
+                                                    "example": 5
                                                 },
                                                 "size_id": {
-                                                    "description": "ID размера продукта",
-                                                    "type": "integer"
+                                                    "description": "ID размера",
+                                                    "type": "integer",
+                                                    "example": 2
                                                 },
                                                 "quantity": {
                                                     "description": "Количество товара",
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 3
                                                 }
                                             },
                                             "type": "object"
                                         }
+                                    },
+                                    "delivery": {
+                                        "description": "Тип доставки",
+                                        "type": "string",
+                                        "example": "Стандартная доставка"
+                                    },
+                                    "use_loyalty_points": {
+                                        "description": "Использовать баллы лояльности",
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -1276,20 +1583,34 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Создан заказ",
+                        "description": "Заказ успешно создан",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Order"
+                                    "properties": {
+                                        "order": {
+                                            "description": "Детали заказа",
+                                            "type": "object"
+                                        },
+                                        "payment": {
+                                            "description": "Детали платежа",
+                                            "type": "object"
+                                        },
+                                        "discount_applied": {
+                                            "description": "Примененная скидка",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
+                    "400": {
+                        "description": "Ошибка валидации"
+                    },
                     "401": {
                         "description": "Не авторизован"
-                    },
-                    "400": {
-                        "description": "Ошибка валидации данных"
                     }
                 },
                 "security": [
@@ -1299,18 +1620,19 @@
                 ]
             }
         },
-        "/orders/{id}": {
+        "/api/orders/{id}": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Показать заказ",
-                "description": "Позволяет пользователю получить информацию о своем заказе.",
-                "operationId": "getOrder",
+                "summary": "Получение конкретного заказа",
+                "description": "Возвращает информацию о заказе пользователя.",
+                "operationId": "c29621029e70f65247909d3e09031118",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID заказа",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -1319,7 +1641,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Данные заказа",
+                        "description": "Информация о заказе",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1342,43 +1664,92 @@
                 ]
             }
         },
-        "/orders/{id}/status": {
-            "put": {
+        "/api/orders/{orderId}/pay": {
+            "post": {
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Обновить статус заказа",
-                "description": "Позволяет авторизованному пользователю обновить статус своего заказа.",
-                "operationId": "updateOrderStatus",
+                "summary": "Оплата заказа",
+                "description": "Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
+                "operationId": "a29ed11b4561635ef0e574881f6668e0",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "orderId",
                         "in": "path",
+                        "description": "ID заказа",
                         "required": true,
                         "schema": {
                             "type": "integer"
                         }
                     }
                 ],
+                "responses": {
+                    "200": {
+                        "description": "Ссылка на подтверждение оплаты",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Платеж создан"
+                                        },
+                                        "payment_url": {
+                                            "type": "string",
+                                            "example": "https://yoomoney.ru/checkout/payments/v2/..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Заказ уже оплачен или отменен"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    },
+                    "500": {
+                        "description": "Ошибка при создании платежа"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders/webhook": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Webhook для обработки платежей",
+                "description": "Обрабатывает уведомления от YooKassa и обновляет статус заказа.",
+                "operationId": "a5a6dfa9256ce4e1dffc5908783d849c",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "status"
-                                ],
                                 "properties": {
-                                    "status": {
-                                        "description": "Новый статус заказа",
-                                        "type": "string",
-                                        "enum": [
-                                            "pending",
-                                            "processed",
-                                            "shipped",
-                                            "delivered",
-                                            "cancelled"
-                                        ]
+                                    "object": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "2a3b5c7d-1234-5678-9abc-def012345678"
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "succeeded"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"
@@ -1388,20 +1759,58 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Статус заказа обновлен",
+                        "description": "Статус платежа обновлен"
+                    },
+                    "400": {
+                        "description": "Некорректный запрос"
+                    },
+                    "404": {
+                        "description": "Заказ не найден"
+                    }
+                }
+            }
+        },
+        "/api/orders/{orderId}/cancel": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Отмена заказа",
+                "description": "Позволяет пользователю отменить заказ, если он еще не обработан.",
+                "operationId": "f6191fd2885eb7de31ff7bf34f1c0f96",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID заказа",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Заказ отменен",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Order"
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ отменен"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
+                    "400": {
+                        "description": "Заказ уже обработан"
+                    },
                     "401": {
                         "description": "Не авторизован"
-                    },
-                    "403": {
-                        "description": "Недостаточно прав"
                     },
                     "404": {
                         "description": "Заказ не найден"
@@ -1754,35 +2163,67 @@
                 ]
             }
         },
-        "/api/orders/{orderId}/pay": {
+        "/api/payments": {
             "post": {
                 "tags": [
-                    "Orders"
+                    "Payments"
                 ],
-                "summary": "Создание платежа для заказа",
-                "description": "Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
-                "operationId": "a29ed11b4561635ef0e574881f6668e0",
-                "parameters": [
-                    {
-                        "name": "orderId",
-                        "in": "path",
-                        "description": "ID заказа, который необходимо оплатить",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
+                "summary": "Создание платежа",
+                "description": "Создает новый платеж через YooKassa с учетом скидок и баллов лояльности.",
+                "operationId": "b26e2c0d24bc74ddf046405c810ff321",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "amount",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "amount": {
+                                        "description": "Сумма платежа",
+                                        "type": "number",
+                                        "example": 1500
+                                    },
+                                    "payment_method": {
+                                        "description": "Способ оплаты",
+                                        "type": "string",
+                                        "enum": [
+                                            "bank_card",
+                                            "sbp",
+                                            "installments"
+                                        ]
+                                    },
+                                    "use_loyalty_points": {
+                                        "description": "Использовать баллы лояльности",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
                         }
                     }
-                ],
+                },
                 "responses": {
                     "200": {
-                        "description": "Ссылка на подтверждение оплаты",
+                        "description": "Платеж успешно создан",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "confirmation_url": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Платеж создан"
+                                        },
+                                        "payment_url": {
                                             "type": "string",
                                             "example": "https://yoomoney.ru/checkout/payments/v2/..."
+                                        },
+                                        "discount_applied": {
+                                            "description": "Информация о примененной скидке",
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -1791,68 +2232,13 @@
                         }
                     },
                     "400": {
-                        "description": "Оплата уже была произведена или заказ отменен",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Оплата уже была произведена или заказ отменен"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Ошибка валидации"
                     },
                     "401": {
-                        "description": "Пользователь не авторизован",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Не авторизован"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Заказ не найден",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Заказ не найден"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Неавторизованный доступ"
                     },
                     "500": {
-                        "description": "Ошибка при создании платежа",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Ошибка при создании платежа"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Ошибка при создании платежа"
                     }
                 },
                 "security": [
@@ -1862,14 +2248,14 @@
                 ]
             }
         },
-        "/api/yookassa/webhook": {
+        "/api/payments/webhook": {
             "post": {
                 "tags": [
                     "Payments"
                 ],
-                "summary": "Webhook для обработки платежей ЮKassa",
-                "description": "Обрабатывает уведомления от ЮKassa о статусе платежа и обновляет статус заказа.",
-                "operationId": "4067f565c5e647f3d1d73e69386aa6bc",
+                "summary": "Webhook для обработки платежей",
+                "description": "Обрабатывает уведомления от YooKassa и обновляет статус платежа.",
+                "operationId": "c0fbff7f2ae38d4bc9d9b0e3ce443e48",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1897,30 +2283,51 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Статус платежа обновлен",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Статус платежа обновлен"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Webhook обработан"
                     },
                     "400": {
-                        "description": "Некорректный запрос",
+                        "description": "Неверные данные"
+                    },
+                    "404": {
+                        "description": "Платеж не найден"
+                    }
+                }
+            }
+        },
+        "/api/payments/status": {
+            "get": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Проверка статуса платежа",
+                "description": "Позволяет проверить статус платежа по `transaction_id`.",
+                "operationId": "bd5aaee711aae51ebd2d82834e9fe277",
+                "parameters": [
+                    {
+                        "name": "transaction_id",
+                        "in": "query",
+                        "description": "ID транзакции платежа",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "2a3b5c7d-1234-5678-9abc-def012345678"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус платежа",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
+                                        "transaction_id": {
                                             "type": "string",
-                                            "example": "Некорректный запрос"
+                                            "example": "2a3b5c7d-1234-5678-9abc-def012345678"
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "succeeded"
                                         }
                                     },
                                     "type": "object"
@@ -1929,22 +2336,79 @@
                         }
                     },
                     "404": {
-                        "description": "Заказ не найден",
+                        "description": "Платеж не найден"
+                    },
+                    "500": {
+                        "description": "Ошибка при получении статуса платежа"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payments/cancel": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Отмена платежа",
+                "description": "Позволяет отменить платеж, если он еще не завершен.",
+                "operationId": "39ee67eb931f5000223a76fc7d6be1db",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "description": "ID транзакции платежа",
+                                        "type": "string",
+                                        "example": "2a3b5c7d-1234-5678-9abc-def012345678"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Платеж успешно отменен",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Заказ не найден"
+                                            "example": "Платеж успешно отменен"
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Платеж нельзя отменить"
+                    },
+                    "404": {
+                        "description": "Платеж не найден"
+                    },
+                    "500": {
+                        "description": "Ошибка при отмене платежа"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/products": {
@@ -1952,11 +2416,79 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Получить список всех товаров",
+                "summary": "Получить список всех продуктов с фильтрами",
                 "operationId": "1bfaa78d1c2c3848ab8165c5dadcad3e",
+                "parameters": [
+                    {
+                        "name": "category_slug",
+                        "in": "query",
+                        "description": "Slug категории",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "clothing"
+                        }
+                    },
+                    {
+                        "name": "color",
+                        "in": "query",
+                        "description": "Фильтр по цвету (название цвета)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "черный"
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "in": "query",
+                        "description": "Фильтр по размеру (например, 'M')",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "M"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Сортировка: popularity (по популярности), old (старые), new (новые), price_asc (цена по возрастанию), price_desc (цена по убыванию)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "popularity",
+                                "old",
+                                "new",
+                                "price_asc",
+                                "price_desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Количество возвращаемых товаров",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Список товаров"
+                        "description": "Список продуктов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -1964,12 +2496,12 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Создать новый товар",
+                "summary": "Создать новый продукт",
                 "operationId": "e8185e307706e2cd84bbcf5171e2f09d",
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
                                 "required": [
                                     "name",
@@ -1979,29 +2511,15 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "Футболка"
+                                        "example": "Футболка 'Rich as'"
                                     },
                                     "category_id": {
                                         "type": "integer",
-                                        "example": 1
+                                        "example": 18
                                     },
                                     "description": {
                                         "type": "string",
-                                        "example": "Описание товара"
-                                    },
-                                    "image_urls": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        },
-                                        "example": [
-                                            "url1.jpg",
-                                            "url2.jpg"
-                                        ]
-                                    },
-                                    "video_url": {
-                                        "type": "string",
-                                        "example": "https://example.com/video.mp4"
+                                        "example": "Описание продукта"
                                     },
                                     "image_files": {
                                         "type": "array",
@@ -2015,28 +2533,10 @@
                                         "format": "binary"
                                     },
                                     "preference": {
-                                        "type": "object",
-                                        "example": {
-                                            "M": {
-                                                "size": "M",
-                                                "params": {
-                                                    "длина": 70,
-                                                    "обхват груди": 100
-                                                }
-                                            }
-                                        }
+                                        "type": "object"
                                     },
                                     "measurements": {
-                                        "type": "object",
-                                        "example": {
-                                            "M": {
-                                                "size": "M",
-                                                "params": {
-                                                    "длина": 70,
-                                                    "обхват груди": 100
-                                                }
-                                            }
-                                        }
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"
@@ -2046,12 +2546,20 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Товар создан"
+                        "description": "Продукт успешно создан"
+                    },
+                    "403": {
+                        "description": "Доступ запрещен"
                     },
                     "422": {
                         "description": "Ошибка валидации"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/products/{id}": {
@@ -2059,12 +2567,13 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Получить товар по ID",
+                "summary": "Получить информацию о продукте",
                 "operationId": "7ab21ddb713501f3d4c2914892c02a21",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID продукта",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2073,10 +2582,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Детали товара"
+                        "description": "Информация о продукте",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Товар не найден"
+                        "description": "Продукт не найден"
                     }
                 }
             },
@@ -2084,12 +2600,13 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Обновить товар",
+                "summary": "Обновить информацию о продукте",
                 "operationId": "6a7e11900844cd85cff66e662b82bd4c",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID продукта",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2099,32 +2616,75 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "multipart/form-data": {
+                        "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Product"
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Обновленный продукт"
+                                    },
+                                    "category_id": {
+                                        "type": "integer",
+                                        "example": 18
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Новое описание"
+                                    },
+                                    "image_files": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "video_file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "preference": {
+                                        "type": "object"
+                                    },
+                                    "measurements": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
                             }
                         }
                     }
                 },
                 "responses": {
                     "200": {
-                        "description": "Товар обновлен"
+                        "description": "Продукт обновлен"
+                    },
+                    "403": {
+                        "description": "Доступ запрещен"
                     },
                     "404": {
-                        "description": "Товар не найден"
+                        "description": "Продукт не найден"
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
                 "tags": [
                     "Products"
                 ],
-                "summary": "Удалить товар",
+                "summary": "Удалить продукт",
                 "operationId": "e80a6ca46716acee6b47ea1ac91663c0",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID продукта",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2133,12 +2693,20 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "Товар удален"
+                        "description": "Продукт удален"
+                    },
+                    "403": {
+                        "description": "Доступ запрещен"
                     },
                     "404": {
-                        "description": "Товар не найден"
+                        "description": "Продукт не найден"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/products/size/{size_slug}": {
@@ -2146,7 +2714,7 @@
                 "tags": [
                     "Products"
                 ],
-                "summary": "Получить товары по размеру",
+                "summary": "Получить продукты по размеру",
                 "operationId": "3e70ef9a29f687bcb1ba6bc6deb5d33d",
                 "parameters": [
                     {
@@ -2161,10 +2729,95 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Список товаров"
+                        "description": "Список продуктов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Размер не найден"
+                        "description": "Продукт не найден"
+                    }
+                }
+            }
+        },
+        "/api/products/color/{color_id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Получить продукты по цвету",
+                "operationId": "d6dbe7382ce3c64454a1f12a0e8b82fe",
+                "parameters": [
+                    {
+                        "name": "color_id",
+                        "in": "path",
+                        "description": "Id цвета",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список продуктов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Продукт не найден"
+                    }
+                }
+            }
+        },
+        "/api/products/popular": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Получение самых популярных товаров",
+                "description": "Возвращает список товаров, которые чаще всего добавляли в избранное (wishlist).",
+                "operationId": "7722cf588aae6907a1337dbe2feeff42",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Количество товаров (по умолчанию 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список популярных товаров",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2867,40 +3520,122 @@
                 "type": "object"
             },
             "Address": {
+                "title": "Адрес",
+                "description": "Модель адреса пользователя",
                 "required": [
                     "id",
-                    "street",
+                    "state",
                     "city",
-                    "postal_code",
-                    "country"
+                    "street",
+                    "house",
+                    "postal_code"
                 ],
                 "properties": {
                     "id": {
-                        "description": "ID адреса",
-                        "type": "integer"
+                        "type": "integer",
+                        "example": 1
                     },
-                    "street": {
-                        "description": "Улица",
-                        "type": "string"
+                    "is_primary": {
+                        "description": "Является ли адрес основным",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "Алматинская область"
                     },
                     "city": {
-                        "description": "Город",
-                        "type": "string"
+                        "type": "string",
+                        "example": "Алматы"
+                    },
+                    "street": {
+                        "type": "string",
+                        "example": "Абая"
+                    },
+                    "house": {
+                        "type": "string",
+                        "example": "12"
+                    },
+                    "apartment": {
+                        "type": "string",
+                        "example": "45",
+                        "nullable": true
                     },
                     "postal_code": {
-                        "description": "Почтовый код",
-                        "type": "string"
+                        "type": "string",
+                        "example": "050000"
                     },
-                    "country": {
-                        "description": "Страна",
-                        "type": "string"
+                    "full_address": {
+                        "type": "string",
+                        "example": "Алматы, ул. Абая, д. 12, кв. 45"
                     }
                 },
                 "type": "object"
             },
-            "Product": {
-                "title": "Product",
-                "description": "Модель продукта",
+            "Category": {
+                "title": "Категория",
+                "description": "Модель категории",
+                "required": [
+                    "id",
+                    "slug",
+                    "title"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "electronics"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Электроника"
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "https://example.com/category.jpg",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-02-06T12:34:56Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2024-02-06T12:34:56Z"
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Category"
+                        }
+                    },
+                    "products": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Product"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Color": {
+                "title": "Цвет",
+                "description": "Модель цвета",
+                "required": [
+                    "id",
+                    "name",
+                    "code"
+                ],
                 "properties": {
                     "id": {
                         "type": "integer",
@@ -2908,11 +3643,52 @@
                     },
                     "name": {
                         "type": "string",
-                        "example": "Футболка"
+                        "example": "Красный"
+                    },
+                    "code": {
+                        "description": "HEX-код цвета",
+                        "type": "string",
+                        "example": "#FF0000"
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "title": "Продукт",
+                "description": "Модель продукта",
+                "required": [
+                    "id",
+                    "name",
+                    "category_id",
+                    "description",
+                    "price"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Футболка 'Rich as'"
                     },
                     "category_id": {
                         "type": "integer",
-                        "example": 2
+                        "example": 18
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Описание продукта"
+                    },
+                    "video_url": {
+                        "type": "string",
+                        "example": "https://example.com/video.mp4",
+                        "nullable": true
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 5760
                     },
                     "image_urls": {
                         "type": "array",
@@ -2921,31 +3697,51 @@
                             "example": "https://example.com/image1.jpg"
                         }
                     },
-                    "video_url": {
-                        "type": "string",
-                        "example": "https://example.com/video.mp4"
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Классическая футболка для повседневной носки"
-                    },
-                    "composition_care": {
-                        "type": "string",
-                        "example": "100% хлопок, машинная стирка при 30°"
-                    },
                     "preference": {
+                        "properties": {
+                            "S": {
+                                "properties": {
+                                    "длина": {
+                                        "type": "integer",
+                                        "example": 60
+                                    },
+                                    "обхват_груди": {
+                                        "type": "integer",
+                                        "example": 90
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "type": "object"
                     },
                     "measurements": {
+                        "properties": {
+                            "S": {
+                                "properties": {
+                                    "длина": {
+                                        "type": "integer",
+                                        "example": 60
+                                    },
+                                    "обхват_груди": {
+                                        "type": "integer",
+                                        "example": 90
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
                         "type": "object"
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-02-06T12:34:56Z"
                     },
                     "updated_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date-time",
+                        "example": "2024-02-06T12:34:56Z"
                     }
                 },
                 "type": "object"
@@ -2961,10 +3757,6 @@
         }
     },
     "tags": [
-        {
-            "name": "Categories",
-            "description": "CRUD операции с категориями"
-        },
         {
             "name": "Colors",
             "description": "CRUD операции с цветами"
@@ -2994,8 +3786,8 @@
             "description": "Auth"
         },
         {
-            "name": "Категории",
-            "description": "Категории"
+            "name": "Categories",
+            "description": "Categories"
         },
         {
             "name": "Orders",

@@ -53,10 +53,6 @@ class ColorResource extends Resource
                 TextColumn::make('code')
                     ->label('Код цвета')
                     ->sortable(),
-
-                TagsColumn::make('products.name')
-                    ->label('Продукты')
-                    ->sortable(),
             ])
             ->filters([
 
