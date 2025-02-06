@@ -103,5 +103,18 @@ class Product extends Model
         return $value ? asset($value) : null;
     }
 
+    /**
+     * Получение самых популярных товаров по количеству добавлений в избранное
+     *
+     * @param int $limit Количество возвращаемых товаров (по умолчанию 10)
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getPopularProducts(int $limit = 10)
+    {
+        return self::withCount('wishlistedBy')
+            ->orderByDesc('wishlisted_by_count')
+            ->limit($limit)
+            ->get();
+    }
 
 }

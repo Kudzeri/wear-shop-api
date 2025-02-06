@@ -281,4 +281,35 @@ class ProductController extends Controller
 
         return response()->json($products, 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/products/popular",
+     *     summary="Получение самых популярных товаров",
+     *     description="Возвращает список товаров, которые чаще всего добавляли в избранное (wishlist).",
+     *     tags={"Products"},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="Количество товаров (по умолчанию 10)",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список популярных товаров",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Product")
+     *         )
+     *     )
+     * )
+     */
+    public function getPopularProducts(Request $request): JsonResponse
+    {
+        $limit = $request->query('limit', 10);
+        $products = Product::getPopularProducts($limit);
+
+        return response()->json($products);
+    }
 }

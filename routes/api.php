@@ -59,6 +59,7 @@ Route::prefix('products')->group(function () {
     Route::middleware('auth:sanctum')->delete('{id}', [ProductController::class, 'destroy']);
     Route::get('size/{size_slug}', [ProductController::class, 'getBySize']);
     Route::get('color/{color_id}', [ProductController::class, 'getByColor']);
+    Route::get('popular', [ProductController::class, 'getPopularProducts']);
 });
 
 Route::prefix('users')->group(function () {
