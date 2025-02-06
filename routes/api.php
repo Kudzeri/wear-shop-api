@@ -26,6 +26,7 @@ Route::get('colors/{id}/products', [ColorController::class, 'getProducts']);
 Route::apiResource('categories', CategoryController::class);
 Route::get('categories/{slug}/parent', [CategoryController::class, 'getParent']);
 Route::get('categories/{slug}/children', [CategoryController::class, 'getChildren']);
+Route::get('/categories/{id}/products', [CategoryController::class, 'getAllProducts']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/addresses', [AddressController::class, 'index']);
@@ -44,19 +45,19 @@ Route::prefix('sizes')->group(function () {
 
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
-    Route::post('/', [ProductController::class, 'store']);
+    Route::middleware('auth:sanctum')->post('/', [ProductController::class, 'store']);
     Route::get('{id}', [ProductController::class, 'show']);
-    Route::put('{id}', [ProductController::class, 'update']);
-    Route::delete('{id}', [ProductController::class, 'destroy']);
+    Route::middleware('auth:sanctum')->put('{id}', [ProductController::class, 'update']);
+    Route::middleware('auth:sanctum')->delete('{id}', [ProductController::class, 'destroy']);
     Route::get('size/{size_slug}', [ProductController::class, 'getBySize']);
 });
 
 Route::prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('{id}', [UserController::class, 'show']);
-    Route::post('/', [UserController::class, 'store']);
-    Route::put('{id}', [UserController::class, 'update']);
-    Route::delete('{id}', [UserController::class, 'destroy']);
+    Route::middleware('auth:sanctum')->post('/', [UserController::class, 'store']);
+    Route::middleware('auth:sanctum')->put('{id}', [UserController::class, 'update']);
+    Route::middleware('auth:sanctum')->delete('{id}', [UserController::class, 'destroy']);
 });
 
 

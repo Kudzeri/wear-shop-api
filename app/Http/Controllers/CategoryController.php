@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -221,5 +222,59 @@ class CategoryController extends Controller
         }
 
         return response()->json($category->children);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/categories/{id}/products",
+     *     summary="Получить все товары категории и её подкатегорий",
+     *     tags={"Категории"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID категории",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Список товаров",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(ref="#/components/schemas/Product")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Категория не найдена"
+     *     )
+     * )
+     */
+    public function getAllProducts($categoryId)
+    {
+        $category = Category::with('children')->findOrFail($categoryId);
+
+        $categoryIds = $this->getAllCategoryIds($category);
+
+        $products = Product::whereIn('category_id', $categoryIds)->get();
+
+        return response()->json($products);
+    }
+
+    /**
+     * Получает все ID текущей и дочерних категорий рекурсивно.
+     *
+     * @param Category $category
+     * @return array
+     */
+    private function getAllCategoryIds($category)
+    {
+        $ids = [$category->id];
+
+        foreach ($category->children as $child) {
+            $ids = array_merge($ids, $this->getAllCategoryIds($child));
+        }
+
+        return $ids;
     }
 }

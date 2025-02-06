@@ -759,6 +759,44 @@
                 }
             }
         },
+        "/api/categories/{id}/products": {
+            "get": {
+                "tags": [
+                    "Категории"
+                ],
+                "summary": "Получить все товары категории и её подкатегорий",
+                "operationId": "51e119cb91b10faf5102a6fdc20548eb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID категории",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список товаров",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Product"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Категория не найдена"
+                    }
+                }
+            }
+        },
         "/api/colors": {
             "get": {
                 "tags": [
@@ -2954,6 +2992,10 @@
         {
             "name": "Auth",
             "description": "Auth"
+        },
+        {
+            "name": "Категории",
+            "description": "Категории"
         },
         {
             "name": "Orders",

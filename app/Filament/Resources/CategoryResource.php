@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -34,9 +35,13 @@ class CategoryResource extends Resource
 
                 Select::make('parent_id')
                     ->label('Родительская категория')
-                    ->relationship('parent', 'title') // Связь с родительской категорией
-                    ->nullable() // Родительская категория может быть пустой
+                    ->relationship('parent', 'title')
+                    ->nullable()
                     ->searchable(),
+                FileUpload::make('image')
+                ->label('Изображение')
+                    ->disk('public')
+                    ->directory('categories')
             ]);
     }
 
@@ -57,7 +62,6 @@ class CategoryResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                // Можно добавить фильтры, например, для родительских категорий
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
