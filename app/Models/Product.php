@@ -91,4 +91,17 @@ class Product extends Model
         }
     }
 
+    public function setVideoFileAttribute($file)
+    {
+        if ($file) {
+            $this->attributes['video_url'] = Storage::url($file);
+        }
+    }
+
+    public function getVideoUrlAttribute($value)
+    {
+        return $value ? asset($value) : null;
+    }
+
+
 }

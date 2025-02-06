@@ -54,9 +54,12 @@ class ProductResource extends Resource
                     ->moveFiles()
                     ->afterStateUpdated(fn ($state, $record) => $record?->syncImages($state)),
 
-                TextInput::make('video_url')
-                    ->label('Ссылка на видео')
-                    ->url()
+                FileUpload::make('video_file')
+                    ->label('Загрузить видео (10мб)')
+                    ->disk('public')
+                    ->directory('products/videos')
+                    ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
+                    ->maxSize(10240) // 10MB
                     ->nullable(),
 
                 Textarea::make('composition_care')
