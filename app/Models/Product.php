@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
+
 /**
  * @OA\Schema(
  *     schema="Product",
@@ -20,6 +22,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *     @OA\Property(property="description", type="string", example="Описание продукта"),
  *     @OA\Property(property="video_url", type="string", nullable=true, example="https://example.com/video.mp4"),
  *     @OA\Property(property="price", type="number", format="float", example=5760),
+ *     @OA\Property(property="discount_percentage", type="number", format="float", example=10),
+ *     @OA\Property(property="is_discount", type="boolean", example=true),
  *     @OA\Property(property="image_urls", type="array", @OA\Items(type="string", example="https://example.com/image1.jpg")),
  *     @OA\Property(property="preference", type="object",
  *         @OA\Property(property="S", type="object",
@@ -50,12 +54,16 @@ class Product extends Model
         'composition_care',
         'preference',
         'measurements',
-        'price'
+        'price',
+        'is_discount',
+        'discount_percentage',
     ];
 
     protected $casts = [
         'preference' => 'array',
         'measurements' => 'array',
+        'is_discount' => 'boolean',
+        'discount_percentage' => 'decimal:2',
     ];
 
     public function colors(): BelongsToMany
@@ -68,9 +76,9 @@ class Product extends Model
         return $this->belongsToMany(Size::class, 'product_size');
     }
 
-    public function wishlistedBy(): BelongsToMany
+    public function wishlistedBy()
     {
-        return $this->belongsToMany(User::class, 'wishlists');
+        return $this->belongsToMany(User::class, 'wishlists', 'product_id', 'user_id');
     }
 
     public function category(): BelongsTo
@@ -126,8 +134,17 @@ class Product extends Model
     {
         return self::withCount('wishlistedBy')
             ->orderByDesc('wishlisted_by_count')
-            ->limit($limit)
+            ->take($limit)
             ->get();
     }
 
+
+    public function getDiscountedPrice(): float
+    {
+        if ($this->is_discount && $this->discount_percentage > 0) {
+            return round($this->price * (1 - $this->discount_percentage / 100), 2);
+        }
+
+        return $this->price;
+    }
 }

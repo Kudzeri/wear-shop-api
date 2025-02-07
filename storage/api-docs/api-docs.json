@@ -1072,6 +1072,33 @@
                 }
             }
         },
+        "/api/categories/on-sale": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Получение категорий со скидками",
+                "operationId": "047215ca29d4eda1e8e50c1885f737f0",
+                "responses": {
+                    "200": {
+                        "description": "Список категорий в распродаже",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Category"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Нет категорий в распродаж"
+                    }
+                }
+            }
+        },
         "/api/colors": {
             "get": {
                 "tags": [

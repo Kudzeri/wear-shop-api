@@ -112,6 +112,11 @@ class ProductController extends Controller
         $limit = $request->query('limit', 10);
         $products = $query->paginate($limit);
 
+        $products->getCollection()->transform(function ($product) {
+            $product->discounted_price = $product->getDiscountedPrice();
+            return $product;
+        });
+
         return response()->json($products);
     }
 
@@ -273,11 +278,18 @@ class ProductController extends Controller
     public function show(int $id): JsonResponse
     {
         $product = Product::with('images')->find($id);
+
         if (!$product) {
             return response()->json(['message' => 'Товар не найден'], 404);
         }
-        return response()->json($product, 200);
+
+        // Добавляем цену со скидкой в ответ
+        $productData = $product->toArray();
+        $productData['discounted_price'] = $product->getDiscountedPrice();
+
+        return response()->json($productData, 200);
     }
+
     /**
      * @OA\Delete(
      *     path="/api/products/{id}",
@@ -392,8 +404,21 @@ class ProductController extends Controller
     public function getPopularProducts(Request $request): JsonResponse
     {
         $limit = $request->query('limit', 10);
-        $products = Product::getPopularProducts($limit);
+
+        $products = Product::withCount('wishlistedBy')->orderByDesc('wishlisted_by_count')->take($limit)->get();
+
+        if ($products->isEmpty()) {
+            return response()->json(['message' => 'Нет популярных товаров'], 404);
+        }
+
+        // Добавляем цену со скидкой
+        $products->transform(function ($product) {
+            $product->discounted_price = $product->getDiscountedPrice();
+            return $product;
+        });
 
         return response()->json($products);
     }
+
+
 }

@@ -57,14 +57,16 @@ class ProductResource extends Resource
                         if ($record) {
                             $record->syncImagesAdm($state); // Синхронизация изображений
                         }
-                    }),
+                    })
+                    ->dehydrated(fn ($state) => filled($state)),
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
                     ->disk('public')
                     ->directory('products/videos')
                     ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
                     ->maxSize(10240) // 10MB
-                    ->nullable(),
+                    ->nullable()
+                    ->dehydrated(fn ($state) => filled($state)),
 
                 Textarea::make('composition_care')
                     ->label('Состав и уход')

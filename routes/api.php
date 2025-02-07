@@ -55,12 +55,12 @@ Route::prefix('sizes')->group(function () {
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::middleware('auth:sanctum')->post('/', [ProductController::class, 'store']);
+    Route::get('popular', [ProductController::class, 'getPopularProducts']);
     Route::get('{id}', [ProductController::class, 'show']);
     Route::middleware('auth:sanctum')->put('{id}', [ProductController::class, 'update']);
     Route::middleware('auth:sanctum')->delete('{id}', [ProductController::class, 'destroy']);
     Route::get('size/{size_slug}', [ProductController::class, 'getBySize']);
     Route::get('color/{color_id}', [ProductController::class, 'getByColor']);
-    Route::get('popular', [ProductController::class, 'getPopularProducts']);
 });
 
 Route::prefix('users')->group(function () {
