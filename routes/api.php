@@ -35,6 +35,7 @@ Route::apiResource('categories', CategoryController::class);
 Route::get('categories/{slug}/parent', [CategoryController::class, 'getParent']);
 Route::get('categories/{slug}/children', [CategoryController::class, 'getChildren']);
 Route::get('/categories/{id}/products', [CategoryController::class, 'getAllProducts']);
+Route::get('/categories/on-sale', [CategoryController::class, 'getSaleCategories']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/addresses', [AddressController::class, 'index']);

@@ -271,4 +271,25 @@ class CategoryController extends Controller
 
         return $ids;
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/categories/on-sale",
+     *     summary="Получение категорий со скидками",
+     *     tags={"Categories"},
+     *     @OA\Response(response=200, description="Список категорий в распродаже", @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Category"))),
+     *     @OA\Response(response=404, description="Нет категорий в распродаж")
+     * )
+     */
+    public function getSaleCategories(): JsonResponse
+    {
+        $categories = Category::where('is_sale', true)->with(['children', 'products'])->get();
+
+        if ($categories->isEmpty()) {
+            return response()->json(['message' => 'Нет категорий в распродаже'], 404);
+        }
+
+        return response()->json($categories);
+    }
+
 }
