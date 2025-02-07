@@ -94,10 +94,4 @@ class User extends Authenticatable
         return $this->belongsTo(LoyaltyLevel::class, 'loyalty_level_id');
     }
 
-    public function setPasswordAttribute($value)
-    {
-        if ($value) {
-            $this->attributes['password'] = bcrypt($value);
-        }
-    }
 }
