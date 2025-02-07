@@ -55,6 +55,14 @@ class UserResource extends Resource
                     ->image()
                     ->nullable(),
 
+                Forms\Components\Select::make('role')
+                    ->label('Роль')
+                    ->options([
+                        'user' => 'Пользователь',
+                        'admin' => 'Администратор',
+                    ])
+                    ->required(),
+
                 Forms\Components\TextInput::make('password')
                     ->label('Пароль')
                     ->password()
@@ -74,9 +82,16 @@ class UserResource extends Resource
                 ImageColumn::make('avatar_url')->label('Аватар'),
                 TextColumn::make('email')->label('Электронная почта')->limit(50),
                 TextColumn::make('phone')->label('Телефон')->limit(50),
+                TextColumn::make('role')->label('Роль')->limit(50),
                 TextColumn::make('created_at')->label('Дата создания')->dateTime(),
             ])
             ->filters([
+                SelectFilter::make('role')
+                    ->label('Фильтр по роли')
+                    ->options([
+                        'user' => 'Пользователь',
+                        'admin' => 'Администратор',
+                    ]),
             ])
             ->actions([
                 EditAction::make(),
