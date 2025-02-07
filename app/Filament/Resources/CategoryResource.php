@@ -13,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TagsColumn;
+use Filament\Forms\Components\Toggle;
 
 class CategoryResource extends Resource
 {
@@ -39,19 +40,20 @@ class CategoryResource extends Resource
                     ->relationship('parent', 'title')
                     ->nullable()
                     ->searchable(),
+
                 FileUpload::make('image')
                     ->label('Изображение')
                     ->disk('public')
                     ->directory('categories')
                     ->previewable()
                     ->reorderable()
-                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName()) // Корректное сохранение пути
+                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName()), // Корректное сохранение пути
 
-
-
+                Toggle::make('is_sale')
+                    ->label('Распродажа')
+                    ->default(false)
             ]);
     }
-
 
     public static function table(Tables\Table $table): Tables\Table
     {
@@ -61,15 +63,23 @@ class CategoryResource extends Resource
                     ->label('Изображение')
                     ->disk('public')
                     ->size(50), // Укажи размер превью
+
                 TextColumn::make('title')
                     ->label('Название категории')
                     ->searchable(),
+
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->sortable(),
+
                 TextColumn::make('parent.title')
                     ->label('Родительская категория')
                     ->sortable(),
+
+                TextColumn::make('is_sale')
+                    ->label('Распродажа')
+                    ->sortable()
+                    ->boolean()
             ])
             ->filters([])
             ->actions([
