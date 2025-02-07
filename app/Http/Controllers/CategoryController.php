@@ -95,6 +95,12 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Категория не найдена'], 404);
         }
 
+        $category->products->transform(function ($product) {
+            $product->discounted_price = $product->getDiscountedPrice();
+            return $product;
+        });
+
+
         return response()->json($category);
     }
 
@@ -288,6 +294,15 @@ class CategoryController extends Controller
         if ($categories->isEmpty()) {
             return response()->json(['message' => 'Нет категорий в распродаже'], 404);
         }
+
+        // Добавляем `discounted_price` в каждый продукт внутри категорий
+        $categories->transform(function ($category) {
+            $category->products->transform(function ($product) {
+                $product->discounted_price = $product->getDiscountedPrice();
+                return $product;
+            });
+            return $category;
+        });
 
         return response()->json($categories);
     }
