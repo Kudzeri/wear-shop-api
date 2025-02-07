@@ -29,7 +29,7 @@ class CategoryResource extends Resource
                 TextInput::make('slug')
                     ->label('Slug')
                     ->required()
-                    ->unique(Category::class, 'slug'),
+                    ->unique(Category::class, 'slug', ignoreRecord: true),
 
                 TextInput::make('title')
                     ->label('Название категории')
@@ -47,11 +47,14 @@ class CategoryResource extends Resource
                     ->directory('categories')
                     ->previewable()
                     ->reorderable()
-                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName()), // Корректное сохранение пути
+                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName())  // Корректное сохранение пути
+                    ->dehydrated(false) // Не очищает значение, если ничего не загружено
+                    ->nullable(),
 
                 Toggle::make('is_sale')
                     ->label('Распродажа')
                     ->default(false)
+                    ->dehydrated()
             ]);
     }
 
@@ -76,7 +79,7 @@ class CategoryResource extends Resource
                     ->label('Родительская категория')
                     ->sortable(),
 
-                TextColumn::make('is_sale')
+                Tables\Columns\IconColumn::make('is_sale')
                     ->label('Распродажа')
                     ->sortable()
                     ->boolean()

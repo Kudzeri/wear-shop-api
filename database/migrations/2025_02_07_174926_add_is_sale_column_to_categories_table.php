@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->boolean('is_discount')->default(false)->comment('Флаг наличия скидки');
-            $table->decimal('discount_percentage', 5, 2)->default(0)->comment('Процент скидки');
+        Schema::table('categories', function (Blueprint $table) {
+            $table->boolean('is_sale')->default(false);
         });
     }
 
@@ -23,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn(['is_discount', 'discount_percentage']);
+            $table->dropColumn('is_sale');
         });
     }
 };
