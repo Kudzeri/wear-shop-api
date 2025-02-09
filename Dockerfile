@@ -26,7 +26,9 @@ RUN chmod -R 775 /var/www/html
 RUN ls -la /var/www/html
 
 # Устанавливаем зависимости с флагами безопасности
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php composer-setup.php
+RUN php composer.phar install
 
 # Генерируем ключ
 RUN php artisan key:generate
