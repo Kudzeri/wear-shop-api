@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/loyalty/points', [LoyaltyController::class, 'getUserPoints']);
     Route::get('/loyalty/level', [LoyaltyController::class, 'getUserLevel']);
     Route::get('/loyalty/apply-discount', [LoyaltyController::class, 'applyDiscount']);
+    Route::get('/loyalty/points-history', [LoyaltyController::class, 'getPointsHistory']);
 });
 
 

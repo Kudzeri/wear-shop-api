@@ -39,7 +39,7 @@ class LoyaltyService
 
     public function getTotalPoints(User $user): int
     {
-        return $user->loyalty_points;
+        return $user->loyaltyPoints;
     }
 
     public function getUserLevel(User $user)
