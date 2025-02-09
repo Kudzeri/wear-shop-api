@@ -84,7 +84,13 @@ class OrderController extends Controller
 
         // Рассчитываем стоимость заказа
         $totalPrice = 0;
-        $products = Product::whereIn('id', array_column($validated['items'], 'product_id'))->get()->keyBy('id');
+        $productIds = array_column($validated['items'], 'product_id');
+        if (empty($productIds)) {
+            return response()->json(['message' => 'Список товаров пуст'], 400);
+        }
+
+        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
 
         foreach ($validated['items'] as $item) {
             if (!isset($products[$item['product_id']])) {
@@ -132,6 +138,8 @@ class OrderController extends Controller
                 'transaction_id' => null
             ]);
 
+            Log::info('Создан заказ', ['order_id' => $order->id, 'user_id' => $user->id]);
+            Log::info('Создан платеж', ['payment_id' => $payment->id, 'amount' => $discountData['final_amount']]);
             DB::commit();
 
             return response()->json([

@@ -60,8 +60,11 @@ class LoyaltyService
         $discountPercentage = $loyaltyLevel ? $loyaltyLevel->discount_percentage : 0;
         $discountAmount = ($totalAmount * $discountPercentage) / 100;
 
+        // Получаем сумму баллов пользователя
+        $userPoints = $user->loyaltyPoints()->sum('points');
+
         // Определяем количество баллов для списания
-        $pointsToRedeem = min($user->loyalty_points, $totalAmount - $discountAmount);
+        $pointsToRedeem = min($userPoints, $totalAmount - $discountAmount);
         $finalAmount = $totalAmount - $discountAmount - $pointsToRedeem;
 
         if ($pointsToRedeem > 0) {
@@ -83,6 +86,7 @@ class LoyaltyService
             'final_amount' => max($finalAmount, 0)
         ];
     }
+
 
     private function updateUserLevel(User $user): void
     {
