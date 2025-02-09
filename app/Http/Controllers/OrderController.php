@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
     use Illuminate\Http\JsonResponse;
     use Illuminate\Http\Request;
     use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -67,25 +68,33 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
-        $validated = $request->validate([
-            'address_id' => 'required|exists:addresses,id',
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.size_id' => 'required|exists:sizes,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'delivery' => 'required|string',
-            'use_loyalty_points' => 'boolean'
-        ]);
+        try {
+            $validated = $request->validate([
+                'address_id' => 'required|exists:addresses,id',
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.size_id' => 'required|exists:sizes,id',
+                'items.*.quantity' => 'required|integer|min:1',
+                'delivery' => 'required|string',
+                'use_loyalty_points' => 'boolean'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        }
 
         // Рассчитываем стоимость заказа
         $totalPrice = 0;
+        $products = Product::whereIn('id', array_column($validated['items'], 'product_id'))->get()->keyBy('id');
+
         foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            $totalPrice += $product->price * $item['quantity'];
+            if (!isset($products[$item['product_id']])) {
+                return response()->json(['message' => "Продукт с ID {$item['product_id']} не найден"], 400);
+            }
+            $totalPrice += $products[$item['product_id']]->price * $item['quantity'];
         }
 
-        // Применяем скидки и баллы
-        $discountData = $validated['use_loyalty_points']
+        // Применяем скидки
+        $discountData = $validated['use_loyalty_points'] ?? false
             ? $this->loyaltyService->applyDiscount($user, $totalPrice)
             : ['final_amount' => $totalPrice];
 
@@ -93,41 +102,48 @@ class OrderController extends Controller
             return response()->json(['message' => 'Сумма заказа после скидки не может быть 0'], 400);
         }
 
-        // Создаем заказ
-        $order = Order::create([
-            'user_id' => $user->id,
-            'address_id' => $validated['address_id'],
-            'total_price' => $discountData['final_amount'],
-            'status' => 'pending',
-            'delivery' => $validated['delivery'],
-        ]);
-
-        // Создаем товары в заказе
-        foreach ($validated['items'] as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'size_id' => $item['size_id'],
-                'quantity' => $item['quantity'],
-                'price' => Product::find($item['product_id'])->price,
+        // Транзакция: создаем заказ, товары и платеж
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'user_id' => $user->id,
+                'address_id' => $validated['address_id'],
+                'total_price' => $discountData['final_amount'],
+                'status' => 'pending',
+                'delivery' => $validated['delivery'],
             ]);
+
+            foreach ($validated['items'] as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'size_id' => $item['size_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $products[$item['product_id']]->price,
+                ]);
+            }
+
+            $payment = Payment::create([
+                'user_id' => $user->id,
+                'order_id' => $order->id,
+                'amount' => $discountData['final_amount'],
+                'status' => 'pending',
+                'payment_method' => null,
+                'transaction_id' => null
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'order' => $order,
+                'payment' => $payment,
+                'discount_applied' => $discountData
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Ошибка сервера', 'error' => $e->getMessage()], 500);
         }
-
-        // Создаем запись о платеже
-        $payment = Payment::create([
-            'user_id' => $user->id,
-            'order_id' => $order->id,
-            'amount' => $discountData['final_amount'],
-            'status' => 'pending',
-            'payment_method' => null,
-            'transaction_id' => null
-        ]);
-
-        return response()->json([
-            'order' => $order,
-            'payment' => $payment,
-            'discount_applied' => $discountData
-        ], 201);
     }
 
     /**
@@ -145,6 +161,8 @@ class OrderController extends Controller
      *     @OA\Response(response=401, description="Не авторизован")
      * )
      */
+
+
 
     public function index(): JsonResponse
     {
