@@ -256,6 +256,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
+        if (!$request->hasFile('avatar')) {
+            return response()->json(['message' => 'Файл не загружен'], 400)
+                ->header('Access-Control-Allow-Origin', '*');
+        }
+
+
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
