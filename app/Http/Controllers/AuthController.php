@@ -261,18 +261,22 @@ class AuthController extends Controller
                 ->header('Access-Control-Allow-Origin', '*');
         }
 
-
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ]);
-
-        if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $user->update(['avatar_url' => asset('storage/' . $path)]);
-            return response()->json(['avatar_url' => $user->avatar_url], 200);
+        try {
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Ошибка валидации', 'errors' => $e->errors()], 422);
         }
 
-        return response()->json(['message' => 'Ошибка загрузки файла'], 400);
+        try {
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->forceFill(['avatar_url' => asset('storage/' . $path)])->save();
+
+            return response()->json(['avatar_url' => $user->avatar_url], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Ошибка загрузки файла', 'error' => $e->getMessage()], 500);
+        }
     }
 
     /**
