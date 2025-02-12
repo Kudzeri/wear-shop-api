@@ -277,7 +277,7 @@ class ProductController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $product = Product::with('images')->find($id);
+        $product = Product::with('images', 'sizes', 'colors', 'category')->withCount('wishlistedBy')->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Товар не найден'], 404);
