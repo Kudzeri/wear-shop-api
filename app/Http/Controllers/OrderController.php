@@ -133,6 +133,7 @@ class OrderController extends Controller
                 'user_id' => $user->id,
                 'order_id' => $order->id,
                 'amount' => $discountData['final_amount'],
+                'currency' => 'RUB',
                 'status' => 'pending',
                 'payment_method' => null,
                 'transaction_id' => null
