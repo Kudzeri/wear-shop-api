@@ -405,7 +405,7 @@ class ProductController extends Controller
     {
         $limit = $request->query('limit', 10);
 
-        $products = Product::withCount('wishlistedBy')->orderByDesc('wishlisted_by_count')->take($limit)->get();
+        $products = Product::with('images')->withCount('wishlistedBy')->orderByDesc('wishlisted_by_count')->take($limit)->get();
 
         if ($products->isEmpty()) {
             return response()->json(['message' => 'Нет популярных товаров'], 404);
