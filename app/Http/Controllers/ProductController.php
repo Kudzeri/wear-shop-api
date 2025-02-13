@@ -339,7 +339,7 @@ class ProductController extends Controller
     {
         $products = Product::whereHas('sizes', function ($query) use ($size_slug) {
             $query->where('slug', $size_slug);
-        })->with('images')->get();
+        })->with('images','sizes', 'colors', 'category')->get();
 
         return response()->json($products, 200);
     }
@@ -369,7 +369,7 @@ class ProductController extends Controller
     {
         $products = Product::whereHas('colors', function ($query) use ($color_id) {
             $query->where('id', $color_id);
-        })->with('images')->get();
+        })->with('images','sizes', 'colors', 'category')->get();
 
         if ($products->isEmpty()) {
             return response()->json(['message' => 'Продукты с данным цветом не найдены'], 404);
@@ -405,7 +405,7 @@ class ProductController extends Controller
     {
         $limit = $request->query('limit', 10);
 
-        $products = Product::with('images')->withCount('wishlistedBy')->orderByDesc('wishlisted_by_count')->take($limit)->get();
+        $products = Product::with('images','sizes', 'colors', 'category')->withCount('wishlistedBy')->orderByDesc('wishlisted_by_count')->take($limit)->get();
 
         if ($products->isEmpty()) {
             return response()->json(['message' => 'Нет популярных товаров'], 404);
