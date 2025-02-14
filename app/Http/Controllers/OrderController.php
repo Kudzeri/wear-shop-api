@@ -28,36 +28,149 @@ class OrderController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/orders",
+     *     path="/orders",
      *     summary="Создание заказа",
-     *     description="Создает новый заказ с возможностью использования баллов лояльности.",
+     *     description="Создает заказ и соответствующий платеж для авторизованного пользователя. Поддерживаются два метода оплаты: наличными (cash) и через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
+     *     operationId="storeOrder",
      *     tags={"Orders"},
-     *     security={{"bearerAuth": {}}},
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Данные для создания заказа",
      *         @OA\JsonContent(
-     *             required={"address_id", "items", "delivery"},
-     *             @OA\Property(property="address_id", type="integer", example=1, description="ID адреса доставки"),
-     *             @OA\Property(property="items", type="array", @OA\Items(
-     *                 @OA\Property(property="product_id", type="integer", example=5, description="ID товара"),
-     *                 @OA\Property(property="size_id", type="integer", example=2, description="ID размера"),
-     *                 @OA\Property(property="quantity", type="integer", example=3, description="Количество товара")
-     *             )),
-     *             @OA\Property(property="delivery", type="string", example="Стандартная доставка", description="Тип доставки"),
-     *             @OA\Property(property="use_loyalty_points", type="boolean", example=true, description="Использовать баллы лояльности")
+     *             required={"address_id", "items", "delivery", "payment_method"},
+     *             @OA\Property(
+     *                 property="address_id",
+     *                 type="integer",
+     *                 example=1,
+     *                 description="ID адреса доставки"
+     *             ),
+     *             @OA\Property(
+     *                 property="items",
+     *                 type="array",
+     *                 description="Список товаров заказа",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     required={"product_id", "size_id", "quantity"},
+     *                     @OA\Property(
+     *                         property="product_id",
+     *                         type="integer",
+     *                         example=10,
+     *                         description="ID продукта"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="size_id",
+     *                         type="integer",
+     *                         example=2,
+     *                         description="ID размера"
+     *                     ),
+     *                     @OA\Property(
+     *                         property="quantity",
+     *                         type="integer",
+     *                         example=3,
+     *                         description="Количество товара"
+     *                     )
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="delivery",
+     *                 type="string",
+     *                 example="express",
+     *                 description="Тип доставки"
+     *             ),
+     *             @OA\Property(
+     *                 property="use_loyalty_points",
+     *                 type="boolean",
+     *                 example=false,
+     *                 description="Флаг использования бонусных баллов"
+     *             ),
+     *             @OA\Property(
+     *                 property="payment_method",
+     *                 type="string",
+     *                 enum={"cash", "yookassa"},
+     *                 example="cash",
+     *                 description="Метод оплаты: 'cash' - наличными, 'yookassa' - через YooKassa"
+     *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Заказ успешно создан",
      *         @OA\JsonContent(
-     *             @OA\Property(property="order", type="object", description="Детали заказа"),
-     *             @OA\Property(property="payment", type="object", description="Детали платежа"),
-     *             @OA\Property(property="discount_applied", type="object", description="Примененная скидка")
+     *             @OA\Property(
+     *                 property="order",
+     *                 type="object",
+     *                 description="Объект созданного заказа"
+     *             ),
+     *             @OA\Property(
+     *                 property="payment",
+     *                 type="object",
+     *                 description="Объект созданного платежа. В случае оплаты через YooKassa содержит transaction_id, полученный от API YooKassa",
+     *                 @OA\Property(property="id", type="integer", example=100),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="order_id", type="integer", example=50),
+     *                 @OA\Property(property="amount", type="number", format="float", example=1500.75),
+     *                 @OA\Property(property="currency", type="string", example="RUB"),
+     *                 @OA\Property(property="status", type="string", example="pending"),
+     *                 @OA\Property(property="payment_method", type="string", example="yookassa"),
+     *                 @OA\Property(property="transaction_id", type="string", example="yookassa_5f8c9e7a6b8f7")
+     *             ),
+     *             @OA\Property(
+     *                 property="discount_applied",
+     *                 type="object",
+     *                 description="Информация о примененной скидке",
+     *                 @OA\Property(property="final_amount", type="number", format="float", example=1500.75)
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=400, description="Ошибка валидации"),
-     *     @OA\Response(response=401, description="Не авторизован")
+     *     @OA\Response(
+     *         response=400,
+     *         description="Некорректные данные запроса или логическая ошибка (например, сумма заказа после скидки равна 0)",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Список товаров пуст"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Не авторизован"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации входящих данных",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка сервера или ошибка при инициализации платежа через YooKassa",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="message",
+     *                 type="string",
+     *                 example="Ошибка сервера"
+     *             ),
+     *             @OA\Property(
+     *                 property="error",
+     *                 type="string",
+     *                 example="Подробное описание ошибки"
+     *             )
+     *         )
+     *     )
      * )
      */
 
@@ -70,13 +183,14 @@ class OrderController extends Controller
 
         try {
             $validated = $request->validate([
-                'address_id' => 'required|exists:addresses,id',
-                'items' => 'required|array|min:1',
-                'items.*.product_id' => 'required|exists:products,id',
-                'items.*.size_id' => 'required|exists:sizes,id',
-                'items.*.quantity' => 'required|integer|min:1',
-                'delivery' => 'required|string',
-                'use_loyalty_points' => 'boolean'
+                'address_id'          => 'required|exists:addresses,id',
+                'items'               => 'required|array|min:1',
+                'items.*.product_id'  => 'required|exists:products,id',
+                'items.*.size_id'     => 'required|exists:sizes,id',
+                'items.*.quantity'    => 'required|integer|min:1',
+                'delivery'            => 'required|string',
+                'use_loyalty_points'  => 'boolean',
+                'payment_method'      => 'required|string|in:cash,yookassa',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -91,7 +205,6 @@ class OrderController extends Controller
 
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-
         foreach ($validated['items'] as $item) {
             if (!isset($products[$item['product_id']])) {
                 return response()->json(['message' => "Продукт с ID {$item['product_id']} не найден"], 400);
@@ -99,58 +212,101 @@ class OrderController extends Controller
             $totalPrice += $products[$item['product_id']]->price * $item['quantity'];
         }
 
-        // Применяем скидки
-        $discountData = $validated['use_loyalty_points'] ?? false
-            ? $this->loyaltyService->applyDiscount($user, $totalPrice)
-            : ['final_amount' => $totalPrice];
+        // Применяем скидку, если используется лояльность
+        $useLoyaltyPoints = $validated['use_loyalty_points'] ?? false;
+        if ($useLoyaltyPoints) {
+            $discountData = $this->loyaltyService->applyDiscount($user, $totalPrice);
+        } else {
+            $discountData = ['final_amount' => $totalPrice];
+        }
 
         if ($discountData['final_amount'] <= 0) {
             return response()->json(['message' => 'Сумма заказа после скидки не может быть 0'], 400);
         }
 
-        // Транзакция: создаем заказ, товары и платеж
+        $paymentMethod = $validated['payment_method'];
+
         DB::beginTransaction();
         try {
+            // Создаем заказ
             $order = Order::create([
-                'user_id' => $user->id,
-                'address_id' => $validated['address_id'],
+                'user_id'     => $user->id,
+                'address_id'  => $validated['address_id'],
                 'total_price' => $discountData['final_amount'],
-                'status' => 'pending',
-                'delivery' => $validated['delivery'],
+                'status'      => 'pending',
+                'delivery'    => $validated['delivery'],
             ]);
 
+            // Создаем товары заказа
             foreach ($validated['items'] as $item) {
                 OrderItem::create([
-                    'order_id' => $order->id,
+                    'order_id'   => $order->id,
                     'product_id' => $item['product_id'],
-                    'size_id' => $item['size_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $products[$item['product_id']]->price,
+                    'size_id'    => $item['size_id'],
+                    'quantity'   => $item['quantity'],
+                    'price'      => $products[$item['product_id']]->price,
                 ]);
             }
 
-            $payment = Payment::create([
-                'user_id' => $user->id,
-                'order_id' => $order->id,
-                'amount' => $discountData['final_amount'],
-                'currency' => 'RUB',
-                'status' => 'pending',
-                'payment_method' => null,
-                'transaction_id' => null
-            ]);
+            // Обработка платежа в зависимости от выбранного метода
+            if ($paymentMethod === 'cash') {
+                // Оплата наличными
+                $payment = Payment::create([
+                    'user_id'        => $user->id,
+                    'order_id'       => $order->id,
+                    'amount'         => $discountData['final_amount'],
+                    'currency'       => 'RUB',
+                    'status'         => 'pending',
+                    'payment_method' => 'cash',
+                    'transaction_id' => null,
+                ]);
+            } elseif ($paymentMethod === 'yookassa') {
+                // Оплата через YooKassa
+                try {
+                    // Вызов сервиса, который осуществляет запрос к YooKassa
+                    $yooPayment = $this->yookassaService->initiatePayment($order, $discountData['final_amount']);
+
+                    if (!isset($yooPayment['transaction_id'])) {
+                        throw new \Exception("Ответ от YooKassa не содержит transaction_id");
+                    }
+                    $transactionId = $yooPayment['transaction_id'];
+                } catch (\Exception $ex) {
+                    DB::rollBack();
+                    Log::error('Ошибка при инициализации платежа через YooKassa', ['error' => $ex->getMessage()]);
+                    return response()->json([
+                        'message' => 'Ошибка при инициализации платежа через YooKassa',
+                        'error'   => $ex->getMessage()
+                    ], 500);
+                }
+
+                $payment = Payment::create([
+                    'user_id'        => $user->id,
+                    'order_id'       => $order->id,
+                    'amount'         => $discountData['final_amount'],
+                    'currency'       => 'RUB',
+                    'status'         => 'pending',
+                    'payment_method' => 'yookassa',
+                    'transaction_id' => $transactionId,
+                ]);
+            }
 
             Log::info('Создан заказ', ['order_id' => $order->id, 'user_id' => $user->id]);
-            Log::info('Создан платеж', ['payment_id' => $payment->id, 'amount' => $discountData['final_amount']]);
+            Log::info('Создан платеж', [
+                'payment_id' => $payment->id,
+                'amount'     => $discountData['final_amount'],
+                'method'     => $paymentMethod
+            ]);
             DB::commit();
 
             return response()->json([
-                'order' => $order,
-                'payment' => $payment,
+                'order'            => $order,
+                'payment'          => $payment,
                 'discount_applied' => $discountData
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Ошибка при создании заказа', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Ошибка сервера', 'error' => $e->getMessage()], 500);
         }
     }

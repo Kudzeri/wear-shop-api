@@ -3,6 +3,7 @@
 /public/build
 /public/hot
 /vendor
+/public/storage
 .env.backup
 .env.production
 .phpactor.json
