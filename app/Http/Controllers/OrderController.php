@@ -261,7 +261,6 @@ class OrderController extends Controller
                     'transaction_id' => null,
                 ]);
             } elseif ($paymentMethod === 'yookassa') {
-                // Оплата через YooKassa
                 try {
                     // Вызов сервиса, который осуществляет запрос к YooKassa
                     $yooPayment = $this->yookassaService->initiatePayment($order, $discountData['final_amount']);
