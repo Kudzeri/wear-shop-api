@@ -40,4 +40,16 @@ return [
         'secret_key' => env('YOOKASSA_SECRET_KEY'),
     ],
 
+    'russian_post' => [
+        'base_url' => env('RUSSIAN_POST_BASE_URL'),
+        'username' => env('RUSSIAN_POST_USERNAME'),
+        'password' => env('RUSSIAN_POST_PASSWORD')
+    ],
+
+    'sdek' => [
+    'base_url' => env('SDEK_BASE_URL', 'https://api.cdek.ru/'),
+    'api_key'  => env('SDEK_API_KEY'),
+    'account'  => env('SDEK_ACCOUNT'),
+],
+
 ];

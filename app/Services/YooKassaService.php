@@ -14,16 +14,19 @@ class YooKassaService
     public function __construct()
     {
         $this->client = new Client();
-        $this->client->setAuth(config('services.yookassa.shop_id'), config('services.yookassa.secret_key'));
+        $this->client->setAuth(
+            config('services.yookassa.shop_id'),
+            config('services.yookassa.secret_key')
+        );
     }
 
     /**
-     * Создание платежа в YooKassa
+     * Создание платежа в YooKassa.
      *
-     * @param float $amount Сумма платежа
-     * @param string $description Описание платежа
-     * @param string $paymentMethod Метод оплаты (bank_card, sbp, installments)
-     * @return mixed
+     * @param float  $amount        Сумма платежа
+     * @param string $description   Описание платежа
+     * @param string $paymentMethod Метод оплаты (например, bank_card, sbp, installments)
+     * @return mixed|null           Объект платежа или null при ошибке
      */
     public function createPayment(float $amount, string $description, string $paymentMethod)
     {
@@ -50,10 +53,26 @@ class YooKassaService
     }
 
     /**
-     * Получение статуса платежа по transaction_id
+     * Инициализация платежа для заказа.
      *
-     * @param string $paymentId
-     * @return mixed|null
+     * Этот метод является обёрткой над методом createPayment и
+     * формирует описание платежа на основе данных заказа.
+     *
+     * @param mixed $order  Объект заказа, используется для формирования описания (например, order->id)
+     * @param float $amount Сумма платежа
+     * @return mixed|null   Объект платежа или null при ошибке
+     */
+    public function initiatePayment($order, float $amount)
+    {
+        $description = "Оплата заказа #{$order->id}";
+        return $this->createPayment($amount, $description, 'bank_card');
+    }
+
+    /**
+     * Получение статуса платежа по transaction_id.
+     *
+     * @param string $paymentId Идентификатор платежа (transaction_id)
+     * @return mixed|null       Информация о платеже или null при ошибке
      */
     public function getPaymentStatus(string $paymentId)
     {

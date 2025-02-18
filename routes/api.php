@@ -8,6 +8,8 @@ use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RussianPostController;
+use App\Http\Controllers\SdekController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -72,25 +74,38 @@ Route::prefix('users')->group(function () {
 });
 
 
-Route::middleware(['auth:sanctum'])->group(function () {
-    // Пользовательские маршруты
-    Route::post('/orders', [OrderController::class, 'store']); // Создание заказа
-    Route::get('/orders', [OrderController::class, 'index']); // Получение всех заказов пользователя
-    Route::get('/orders/{id}', [OrderController::class, 'show']); // Получение конкретного заказа
-    Route::post('/orders/{orderId}/pay', [OrderController::class, 'payOrder']); // Оплата заказа
-    Route::post('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']); // Отмена заказа
-
-    // Webhook от YooKassa (без аутентификации)
+Route::middleware('auth:api')->group(function () {
+    // Заказы для авторизованных пользователей
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders/{orderId}/pay', [OrderController::class, 'payOrder']);
     Route::post('/orders/webhook', [OrderController::class, 'webhook']);
+    Route::post('/orders/{orderId}/cancel', [OrderController::class, 'cancelOrder']);
+    Route::post('/orders/{orderId}/confirm-payment', [OrderController::class, 'confirmPayment']);
+
+    // Маршруты СДЭК
+    Route::prefix('sdek')->group(function () {
+        Route::post('/calculate-delivery', [SdekController::class, 'calculateDelivery']);
+        Route::post('/create-shipment', [SdekController::class, 'createShipment']);
+        Route::get('/track-shipment', [SdekController::class, 'trackShipment']);
+    });
+
+    // Маршруты Почты России
+    Route::prefix('russian-post')->group(function () {
+        Route::post('/calculate-delivery', [RussianPostController::class, 'calculateDelivery']);
+        Route::post('/create-shipment', [RussianPostController::class, 'createShipment']);
+        Route::get('/track-shipment', [RussianPostController::class, 'trackShipment']);
+    });
 });
 
-// Маршруты для администраторов
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
-    Route::get('/admin/orders', [OrderController::class, 'admIndex']); // Получение всех заказов
-    Route::get('/admin/orders/{id}', [OrderController::class, 'admShow']); // Получение конкретного заказа
-    Route::post('/admin/orders', [OrderController::class, 'admStore']); // Создание заказа от имени пользователя
-    Route::put('/admin/orders/{id}', [OrderController::class, 'admUpdate']); // Обновление заказа
-    Route::delete('/admin/orders/{id}', [OrderController::class, 'admDestroy']); // Удаление заказа
+// Маршруты для администратора (пример с использованием middleware проверки роли "admin")
+Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/orders', [OrderController::class, 'admIndex']);
+    Route::get('/orders/{id}', [OrderController::class, 'admShow']);
+    Route::post('/orders', [OrderController::class, 'admStore']);
+    Route::put('/orders/{id}', [OrderController::class, 'admUpdate']);
+    Route::delete('/orders/{id}', [OrderController::class, 'admDestroy']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

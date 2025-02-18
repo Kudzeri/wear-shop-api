@@ -2,35 +2,33 @@
 
 namespace App\Http\Controllers;
 
-    use App\Models\Order;
-    use App\Models\OrderItem;
-    use App\Models\Payment;
-    use App\Models\Product;
-    use App\Models\Size;
-    use App\Services\YooKassaService;
-    use App\Services\LoyaltyService;
-    use Illuminate\Http\JsonResponse;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Auth;
-    use Illuminate\Support\Facades\DB;
-    use Illuminate\Support\Facades\Log;
+use App\Models\Order;
+use App\Services\OrderService;
+use App\Services\RussianPostService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use OpenApi\Annotations as OA;
 
 class OrderController extends Controller
 {
-    protected YooKassaService $yooKassaService;
-    protected LoyaltyService $loyaltyService;
+    protected OrderService $orderService;
 
-    public function __construct(YooKassaService $yooKassaService, LoyaltyService $loyaltyService)
+    /**
+     * OrderController constructor.
+     *
+     * @param OrderService $orderService
+     */
+    public function __construct(OrderService $orderService)
     {
-        $this->yooKassaService = $yooKassaService;
-        $this->loyaltyService = $loyaltyService;
+        $this->orderService = $orderService;
     }
 
     /**
      * @OA\Post(
      *     path="/orders",
      *     summary="Создание заказа",
-     *     description="Создает заказ и соответствующий платеж для авторизованного пользователя. Поддерживаются два метода оплаты: наличными (cash) и через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
+     *     description="Создает заказ и соответствующий платеж для авторизованного пользователя. Платеж осуществляется через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
      *     operationId="storeOrder",
      *     tags={"Orders"},
      *     security={{"bearerAuth":{}}},
@@ -87,9 +85,9 @@ class OrderController extends Controller
      *             @OA\Property(
      *                 property="payment_method",
      *                 type="string",
-     *                 enum={"cash", "yookassa"},
-     *                 example="cash",
-     *                 description="Метод оплаты: 'cash' - наличными, 'yookassa' - через YooKassa"
+     *                 enum={"yookassa"},
+     *                 example="yookassa",
+     *                 description="Метод оплаты: 'yookassa' - через YooKassa"
      *             )
      *         )
      *     ),
@@ -105,7 +103,7 @@ class OrderController extends Controller
      *             @OA\Property(
      *                 property="payment",
      *                 type="object",
-     *                 description="Объект созданного платежа. В случае оплаты через YooKassa содержит transaction_id, полученный от API YooKassa",
+     *                 description="Объект созданного платежа, содержащий transaction_id, полученный от API YooKassa",
      *                 @OA\Property(property="id", type="integer", example=100),
      *                 @OA\Property(property="user_id", type="integer", example=1),
      *                 @OA\Property(property="order_id", type="integer", example=50),
@@ -173,7 +171,6 @@ class OrderController extends Controller
      *     )
      * )
      */
-
     public function store(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -181,132 +178,26 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
+        $validated = $request->validate([
+            'address_id'          => 'required|exists:addresses,id',
+            'items'               => 'required|array|min:1',
+            'items.*.product_id'  => 'required|exists:products,id',
+            'items.*.size_id'     => 'required|exists:sizes,id',
+            'items.*.quantity'    => 'required|integer|min:1',
+            'delivery'            => 'required|string',
+            'use_loyalty_points'  => 'boolean',
+            'payment_method'      => 'required|string|in:yookassa',
+        ]);
+
         try {
-            $validated = $request->validate([
-                'address_id'          => 'required|exists:addresses,id',
-                'items'               => 'required|array|min:1',
-                'items.*.product_id'  => 'required|exists:products,id',
-                'items.*.size_id'     => 'required|exists:sizes,id',
-                'items.*.quantity'    => 'required|integer|min:1',
-                'delivery'            => 'required|string',
-                'use_loyalty_points'  => 'boolean',
-                'payment_method'      => 'required|string|in:cash,yookassa',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
-        }
-
-        // Рассчитываем стоимость заказа
-        $totalPrice = 0;
-        $productIds = array_column($validated['items'], 'product_id');
-        if (empty($productIds)) {
-            return response()->json(['message' => 'Список товаров пуст'], 400);
-        }
-
-        $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-
-        foreach ($validated['items'] as $item) {
-            if (!isset($products[$item['product_id']])) {
-                return response()->json(['message' => "Продукт с ID {$item['product_id']} не найден"], 400);
-            }
-            $totalPrice += $products[$item['product_id']]->price * $item['quantity'];
-        }
-
-        // Применяем скидку, если используется лояльность
-        $useLoyaltyPoints = $validated['use_loyalty_points'] ?? false;
-        if ($useLoyaltyPoints) {
-            $discountData = $this->loyaltyService->applyDiscount($user, $totalPrice);
-        } else {
-            $discountData = ['final_amount' => $totalPrice];
-        }
-
-        if ($discountData['final_amount'] <= 0) {
-            return response()->json(['message' => 'Сумма заказа после скидки не может быть 0'], 400);
-        }
-
-        $paymentMethod = $validated['payment_method'];
-
-        DB::beginTransaction();
-        try {
-            // Создаем заказ
-            $order = Order::create([
-                'user_id'     => $user->id,
-                'address_id'  => $validated['address_id'],
-                'total_price' => $discountData['final_amount'],
-                'status'      => 'pending',
-                'delivery'    => $validated['delivery'],
-            ]);
-
-            // Создаем товары заказа
-            foreach ($validated['items'] as $item) {
-                OrderItem::create([
-                    'order_id'   => $order->id,
-                    'product_id' => $item['product_id'],
-                    'size_id'    => $item['size_id'],
-                    'quantity'   => $item['quantity'],
-                    'price'      => $products[$item['product_id']]->price,
-                ]);
-            }
-
-            // Обработка платежа в зависимости от выбранного метода
-            if ($paymentMethod === 'cash') {
-                // Оплата наличными
-                $payment = Payment::create([
-                    'user_id'        => $user->id,
-                    'order_id'       => $order->id,
-                    'amount'         => $discountData['final_amount'],
-                    'currency'       => 'RUB',
-                    'status'         => 'pending',
-                    'payment_method' => 'cash',
-                    'transaction_id' => null,
-                ]);
-            } elseif ($paymentMethod === 'yookassa') {
-                try {
-                    // Вызов сервиса, который осуществляет запрос к YooKassa
-                    $yooPayment = $this->yookassaService->initiatePayment($order, $discountData['final_amount']);
-
-                    if (!isset($yooPayment['transaction_id'])) {
-                        throw new \Exception("Ответ от YooKassa не содержит transaction_id");
-                    }
-                    $transactionId = $yooPayment['transaction_id'];
-                } catch (\Exception $ex) {
-                    DB::rollBack();
-                    Log::error('Ошибка при инициализации платежа через YooKassa', ['error' => $ex->getMessage()]);
-                    return response()->json([
-                        'message' => 'Ошибка при инициализации платежа через YooKassa',
-                        'error'   => $ex->getMessage()
-                    ], 500);
-                }
-
-                $payment = Payment::create([
-                    'user_id'        => $user->id,
-                    'order_id'       => $order->id,
-                    'amount'         => $discountData['final_amount'],
-                    'currency'       => 'RUB',
-                    'status'         => 'pending',
-                    'payment_method' => 'yookassa',
-                    'transaction_id' => $transactionId,
-                ]);
-            }
-
-            Log::info('Создан заказ', ['order_id' => $order->id, 'user_id' => $user->id]);
-            Log::info('Создан платеж', [
-                'payment_id' => $payment->id,
-                'amount'     => $discountData['final_amount'],
-                'method'     => $paymentMethod
-            ]);
-            DB::commit();
-
-            return response()->json([
-                'order'            => $order,
-                'payment'          => $payment,
-                'discount_applied' => $discountData
-            ], 201);
-
+            $result = $this->orderService->createOrder($validated, $user);
+            return response()->json($result, 201);
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Ошибка при создании заказа', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Ошибка сервера', 'error' => $e->getMessage()], 500);
+            $status = in_array($e->getMessage(), [
+                'Список товаров пуст',
+                'Сумма заказа после скидки не может быть 0'
+            ]) ? 400 : 500;
+            return response()->json(['message' => $e->getMessage()], $status);
         }
     }
 
@@ -325,9 +216,6 @@ class OrderController extends Controller
      *     @OA\Response(response=401, description="Не авторизован")
      * )
      */
-
-
-
     public function index(): JsonResponse
     {
         $user = Auth::user();
@@ -335,7 +223,10 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
-        $orders = Order::where('user_id', $user->id)->with('items.product', 'items.size', 'address')->get();
+        $orders = Order::where('user_id', $user->id)
+            ->with('items.product', 'items.size', 'address')
+            ->get();
+
         return response()->json($orders);
     }
 
@@ -358,7 +249,6 @@ class OrderController extends Controller
      *     @OA\Response(response=404, description="Заказ не найден")
      * )
      */
-
     public function show($id): JsonResponse
     {
         $user = Auth::user();
@@ -366,7 +256,10 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
-        $order = Order::where('user_id', $user->id)->with('items.product', 'items.size', 'address')->find($id);
+        $order = Order::where('user_id', $user->id)
+            ->with('items.product', 'items.size', 'address')
+            ->find($id);
+
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден'], 404);
         }
@@ -393,7 +286,7 @@ class OrderController extends Controller
      *         description="Ссылка на подтверждение оплаты",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Платеж создан"),
-     *             @OA\Property(property="payment_url", type="string", example="https://yoomoney.ru/checkout/payments/v2/..."),
+     *             @OA\Property(property="payment_url", type="string", example="https://yoomoney.ru/checkout/payments/v2/...")
      *         )
      *     ),
      *     @OA\Response(response=400, description="Заказ уже оплачен или отменен"),
@@ -402,7 +295,6 @@ class OrderController extends Controller
      *     @OA\Response(response=500, description="Ошибка при создании платежа")
      * )
      */
-
     public function payOrder($orderId): JsonResponse
     {
         $user = Auth::user();
@@ -410,12 +302,16 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
-        $order = Order::where('user_id', $user->id)->where('status', 'pending')->find($orderId);
+        $order = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->find($orderId);
+
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден или уже оплачен'], 400);
         }
 
-        $payment = $this->yooKassaService->createPayment(
+        // Предполагается, что для создания платежа используется метод createPayment в сервисе YooKassa.
+        $payment = $this->orderService->yooKassaService->createPayment(
             $order->total_price,
             "Оплата заказа #{$order->id}",
             'bank_card'
@@ -453,7 +349,6 @@ class OrderController extends Controller
      *     @OA\Response(response=404, description="Заказ не найден")
      * )
      */
-
     public function webhook(Request $request): JsonResponse
     {
         $data = $request->all();
@@ -470,7 +365,8 @@ class OrderController extends Controller
 
         if ($data['object']['status'] === 'succeeded') {
             $order->update(['status' => 'completed']);
-            $this->loyaltyService->addPoints($order->user, floor($order->total_price * 0.05));
+            // Добавляем бонусные баллы (например, 5% от суммы заказа)
+            $this->orderService->loyaltyService->addPoints($order->user, floor($order->total_price * 0.05));
         } elseif ($data['object']['status'] === 'canceled') {
             $order->update(['status' => 'cancelled']);
         }
@@ -498,7 +394,6 @@ class OrderController extends Controller
      *     @OA\Response(response=404, description="Заказ не найден")
      * )
      */
-
     public function cancelOrder($orderId): JsonResponse
     {
         $user = Auth::user();
@@ -506,7 +401,10 @@ class OrderController extends Controller
             return response()->json(['message' => 'Не авторизован'], 401);
         }
 
-        $order = Order::where('user_id', $user->id)->where('status', 'pending')->find($orderId);
+        $order = Order::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->find($orderId);
+
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден или уже обработан'], 400);
         }
@@ -516,10 +414,58 @@ class OrderController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/api/orders/{orderId}/confirm-payment",
+     *     summary="Подтверждение оплаты заказа",
+     *     description="Обновляет статус заказа на 'completed' после успешной оплаты.",
+     *     tags={"Orders"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="orderId",
+     *         in="path",
+     *         required=true,
+     *         description="ID заказа, который необходимо подтвердить",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Оплата подтверждена, заказ завершен",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Оплата прошла успешно, заказ завершен")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Заказ уже обработан",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ уже обработан"))
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Заказ не найден",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ не найден"))
+     *     )
+     * )
+     */
+    public function confirmPayment(Request $request, $orderId): JsonResponse
+    {
+        $order = Order::find($orderId);
+        if (!$order) {
+            return response()->json(['message' => 'Заказ не найден'], 404);
+        }
+
+        if ($order->status !== 'pending') {
+            return response()->json(['message' => 'Заказ уже обработан'], 400);
+        }
+
+        $order->update(['status' => 'completed']);
+        return response()->json(['message' => 'Оплата прошла успешно, заказ завершен']);
+    }
+
+    /**
      * @OA\Get(
      *     path="/admin/orders",
      *     tags={"Orders"},
-     *     summary="Получить все заказы",
+     *     summary="Получить все заказы (для администратора)",
      *     description="Позволяет администратору получить все заказы.",
      *     operationId="getAllOrders",
      *     security={{"bearerAuth": {}}},
@@ -534,54 +480,15 @@ class OrderController extends Controller
      *     )
      * )
      */
-
-    public function admStore(Request $request)
+    public function admIndex(): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Недостаточно прав'], 403); // Возвращаем ошибку для пользователей без роли админа
+            return response()->json(['message' => 'Недостаточно прав'], 403);
         }
 
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',  // Для админа мы указываем пользователя при создании заказа
-            'address_id' => 'required|exists:addresses,id',
-            'delivery' => 'required|string',
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.size_id' => 'required|exists:sizes,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
-
-        // Вычисляем общую цену
-        $totalPrice = 0;
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            $size = Size::find($item['size_id']);
-            $price = $product->price; // Цена товара
-            $totalPrice += $price * $item['quantity']; // Добавляем стоимость в общую сумму
-        }
-
-        // Создаем заказ
-        $order = Order::create([
-            'user_id' => $validated['user_id'],
-            'address_id' => $validated['address_id'],
-            'total_price' => $totalPrice,
-            'status' => 'pending', // Начальный статус
-            'delivery' => $validated['delivery'],
-        ]);
-
-        // Создаем позиции заказа
-        foreach ($validated['items'] as $item) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $item['product_id'],
-                'size_id' => $item['size_id'],
-                'quantity' => $item['quantity'],
-                'price' => Product::find($item['product_id'])->price,
-            ]);
-        }
-
-        return response()->json($order, 201);
+        $orders = Order::with('items.product', 'items.size', 'address')->get();
+        return response()->json($orders);
     }
 
     /**
@@ -613,64 +520,14 @@ class OrderController extends Controller
      *     )
      * )
      */
-    // Получить все заказы (для админа)
-    public function admIndex()
+    public function admShow($id): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Недостаточно прав'], 403); // Проверка роли
-        }
-
-        $orders = Order::with('items.product', 'items.size', 'address')->get();
-        return response()->json($orders);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/admin/orders",
-     *     tags={"Orders"},
-     *     summary="Создать заказ (для администратора)",
-     *     description="Позволяет администратору создать заказ от имени пользователя.",
-     *     operationId="createOrderForAdmin",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"user_id", "address_id", "items"},
-     *             @OA\Property(property="user_id", type="integer", description="ID пользователя, от имени которого создается заказ"),
-     *             @OA\Property(property="address_id", type="integer", description="ID адреса доставки"),
-     *             @OA\Property(
-     *                 property="items",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="product_id", type="integer", description="ID продукта"),
-     *                     @OA\Property(property="size_id", type="integer", description="ID размера продукта"),
-     *                     @OA\Property(property="quantity", type="integer", description="Количество товара")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Создан заказ",
-     *         @OA\JsonContent(ref="#/components/schemas/Order")
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Недостаточно прав"
-     *     )
-     * )
-     */
-    // Получить конкретный заказ (для админа)
-    public function admShow($id)
-    {
-        $user = auth()->user();
-        if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Недостаточно прав'], 403); // Проверка роли
+            return response()->json(['message' => 'Недостаточно прав'], 403);
         }
 
         $order = Order::with('items.product', 'items.size', 'address')->find($id);
-
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден'], 404);
         }
@@ -723,65 +580,34 @@ class OrderController extends Controller
      *     )
      * )
      */
-
-    // Обновить заказ (для админа)
-    public function admUpdate(Request $request, $id)
+    public function admUpdate(Request $request, $id): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Недостаточно прав'], 403); // Проверка роли
+            return response()->json(['message' => 'Недостаточно прав'], 403);
         }
 
         $validated = $request->validate([
             'address_id' => 'required|exists:addresses,id',
-            'items' => 'required|array',
+            'items'      => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.size_id' => 'required|exists:sizes,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.size_id'    => 'required|exists:sizes,id',
+            'items.*.quantity'   => 'required|integer|min:1',
         ]);
 
         $order = Order::find($id);
-
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден'], 404);
         }
 
-        // Обновляем общую цену
-        $totalPrice = 0;
-        foreach ($validated['items'] as $item) {
-            $product = Product::find($item['product_id']);
-            $size = Size::find($item['size_id']);
-            $price = $product->price; // Цена товара
-            $totalPrice += $price * $item['quantity']; // Добавляем стоимость в общую сумму
+        try {
+            $updatedOrder = $this->orderService->updateOrder($order, $validated);
+            return response()->json($updatedOrder);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
         }
-
-        // Обновляем заказ
-        $order->update([
-            'address_id' => $validated['address_id'],
-            'total_price' => $totalPrice,
-        ]);
-
-        // Обновляем позиции заказа
-        foreach ($validated['items'] as $item) {
-            $orderItem = OrderItem::where('order_id', $order->id)->where('product_id', $item['product_id'])->first();
-            if ($orderItem) {
-                $orderItem->update([
-                    'quantity' => $item['quantity'],
-                    'price' => Product::find($item['product_id'])->price,
-                ]);
-            } else {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item['product_id'],
-                    'size_id' => $item['size_id'],
-                    'quantity' => $item['quantity'],
-                    'price' => Product::find($item['product_id'])->price,
-                ]);
-            }
-        }
-
-        return response()->json($order);
     }
+
     /**
      * @OA\Delete(
      *     path="/admin/orders/{id}",
@@ -810,78 +636,44 @@ class OrderController extends Controller
      *     )
      * )
      */
-
-    // Удалить заказ (для админа)
-    public function admDestroy($id)
+    public function admDestroy($id): JsonResponse
     {
-        $user = auth()->user();
+        $user = Auth::user();
         if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['message' => 'Недостаточно прав'], 403); // Проверка роли
+            return response()->json(['message' => 'Недостаточно прав'], 403);
         }
 
         $order = Order::find($id);
-
         if (!$order) {
             return response()->json(['message' => 'Заказ не найден'], 404);
         }
 
-        // Удаляем позиции заказа
-        OrderItem::where('order_id', $id)->delete();
-
-        // Удаляем заказ
+        // Удаляем позиции заказа (если связь настроена, можно использовать метод items())
+        $order->items()->delete();
         $order->delete();
 
         return response()->json(['message' => 'Заказ удален']);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/orders/{orderId}/confirm-payment",
-     *     summary="Подтверждение оплаты заказа",
-     *     description="Обновляет статус заказа на 'completed' после успешной оплаты.",
-     *     tags={"Orders"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="orderId",
-     *         in="path",
-     *         required=true,
-     *         description="ID заказа, который необходимо подтвердить",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Оплата подтверждена, заказ завершен",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Оплата прошла успешно, заказ завершен")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Заказ уже обработан",
-     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ уже обработан"))
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Заказ не найден",
-     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Заказ не найден"))
-     *     )
-     * )
-     */
-
-    public function confirmPayment(Request $request, $orderId)
+    public function calculateDelivery(Request $request): JsonResponse
     {
-        $order = Order::find($orderId);
-        if (!$order) {
-            return response()->json(['message' => 'Заказ не найден'], 404);
+        $validated = $request->validate([
+            'from_postcode' => 'required|string',
+            'to_postcode'   => 'required|string',
+            'weight'        => 'required|numeric',
+            'length'        => 'required|numeric',
+            'width'         => 'required|numeric',
+            'height'        => 'required|numeric',
+        ]);
+
+        $russianPostService = app(RussianPostService::class);
+        $result = $russianPostService->calculateDeliveryCost($validated);
+
+        if (!$result) {
+            return response()->json(['message' => 'Ошибка расчёта доставки'], 500);
         }
 
-        if ($order->status !== 'pending') {
-            return response()->json(['message' => 'Заказ уже обработан'], 400);
-        }
-
-        $order->update(['status' => 'completed']);
-
-        return response()->json(['message' => 'Оплата прошла успешно, заказ завершен']);
+        return response()->json($result);
     }
 
 }
