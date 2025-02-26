@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('stylists', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
             $table->string('image_url')->nullable();
             $table->timestamps();
         });
