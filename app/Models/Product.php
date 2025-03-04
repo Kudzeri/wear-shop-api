@@ -150,7 +150,7 @@ class Product extends Model
 
     public function stories(): BelongsToMany
     {
-        return $this->belongsToMany(Stories::class, 'story_product');
+        return $this->belongsToMany(Stories::class, 'stories_products');
     }
 
     public function stylists(): BelongsToMany
