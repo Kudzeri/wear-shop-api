@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Stylist extends Model
 {
-    protected $fillable = ['image_url'];
+    protected $fillable = ['image_url', 'title'];
 
     public function products(): BelongsToMany
     {
