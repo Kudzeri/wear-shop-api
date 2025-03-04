@@ -147,4 +147,14 @@ class Product extends Model
 
         return $this->price;
     }
+
+    public function stories(): BelongsToMany
+    {
+        return $this->belongsToMany(Stories::class, 'story_product');
+    }
+
+    public function stylists(): BelongsToMany
+    {
+        return $this->belongsToMany(Stylist::class, 'stylist_product');
+    }
 }

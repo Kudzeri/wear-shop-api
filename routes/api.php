@@ -10,6 +10,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RussianPostController;
 use App\Http\Controllers\SdekController;
+use App\Http\Controllers\StoriesController;
+use App\Http\Controllers\StylistController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
@@ -138,3 +140,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::post('/payments/webhook', [PaymentController::class, 'webhook']);
 
 Route::get('/order/payment/success/{orderId}', [OrderController::class, 'confirmPayment'])->name('order.payment.success');
+
+
+Route::get('/stories', [StoriesController::class, 'index']);
+Route::post('/stories', [StoriesController::class, 'store']);
+Route::get('/stories/{id}', [StoriesController::class, 'show']);
+Route::delete('/stories/{id}', [StoriesController::class, 'destroy']);
+Route::post('/stories/{story}/products', [StoriesController::class, 'addProduct']);
+Route::delete('/stories/{story}/products', [StoriesController::class, 'removeProduct']);
+
+Route::get('/stylists', [StylistController::class, 'index']);
+Route::post('/stylists', [StylistController::class, 'store']);
+Route::get('/stylists/{id}', [StylistController::class, 'show']);
+Route::delete('/stylists/{id}', [StylistController::class, 'destroy']);
+Route::post('/stylists/{stylist}/products', [StylistController::class, 'addProduct']);
+Route::delete('/stylists/{stylist}/products', [StylistController::class, 'removeProduct']);
