@@ -155,6 +155,6 @@ class Product extends Model
 
     public function stylists(): BelongsToMany
     {
-        return $this->belongsToMany(Stylist::class, 'stylist_product');
+        return $this->belongsToMany(Stylist::class, 'stylist_products');
     }
 }
