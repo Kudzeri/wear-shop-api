@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class StoriesResource extends Resource
 {
     protected static ?string $model = Stories::class;
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
     protected static ?string $navigationLabel = 'Сторисы';
     protected static ?string $pluralModelLabel = 'Сторисы';
     protected static ?string $modelLabel = 'Сторис';

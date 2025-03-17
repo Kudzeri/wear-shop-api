@@ -16,7 +16,6 @@ use Filament\Resources\Resource;
 class StylistResource extends Resource
 {
     protected static ?string $model = Stylist::class;
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $modelLabel = 'Выбор стилиста';
 
     public static function form(Forms\Form $form): Forms\Form
