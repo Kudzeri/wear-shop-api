@@ -2,16 +2,24 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\DeliveryServiceResource\Pages;
+use App\Filament\Resources\DeliveryServiceResource\RelationManagers;
 use App\Models\DeliveryService;
-use Filament\Resources\Resource;
 use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DeliveryServiceResource extends Resource
 {
     protected static ?string $model = DeliveryService::class;
 
-    public static function form(Forms\Form $form): Forms\Form
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function form(Form $form): Form
     {
         return $form
             ->schema([
@@ -36,14 +44,13 @@ class DeliveryServiceResource extends Resource
                 Tables\Columns\TextColumn::make('delivery_service'),
             ]);
     }
-
-    // Добавление pages для ресурса
+    
     public static function getPages(): array
     {
         return [
-            'index'  => \App\Filament\Resources\DeliveryServiceResource\Pages\ListDeliveryServices::route('/'),
-            'create' => \App\Filament\Resources\DeliveryServiceResource\Pages\CreateDeliveryService::route('/create'),
-            'edit'   => \App\Filament\Resources\DeliveryServiceResource\Pages\EditDeliveryService::route('/{record}/edit'),
+            'index' => Pages\ListDeliveryServices::route('/'),
+            'create' => Pages\CreateDeliveryService::route('/create'),
+            'edit' => Pages\EditDeliveryService::route('/{record}/edit'),
         ];
     }
 }
