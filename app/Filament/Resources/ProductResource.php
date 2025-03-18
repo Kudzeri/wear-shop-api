@@ -58,6 +58,7 @@ class ProductResource extends Resource
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
                     ->disk('public')
+                    ->image()
                     ->directory('products/videos')
                     ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
                     ->maxSize(10240) // 10MB
