@@ -20,6 +20,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\Repeater;
 
 class ProductResource extends Resource
 {
@@ -29,79 +30,75 @@ class ProductResource extends Resource
     protected static ?string $navigationLabel = 'Товары';
 
     public static function form(Forms\Form $form): Forms\Form
-    {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->label('Название товара')
-                    ->required(),
+{
+    return $form
+        ->schema([
+            TextInput::make('name')
+                ->label('Название товара')
+                ->required(),
 
-                Select::make('category_id')
-                    ->label('Категория')
-                    ->options(Category::query()->whereNotNull('title')->pluck('title', 'id')->toArray())
-                    ->searchable()
-                    ->required(),
+            Select::make('category_id')
+                ->label('Категория')
+                ->options(Category::query()->whereNotNull('title')->pluck('title', 'id')->toArray())
+                ->searchable()
+                ->required(),
 
-                Textarea::make('description')
-                    ->label('Описание товара')
-                    ->required(),
+            Textarea::make('description')
+                ->label('Описание товара')
+                ->required(),
 
-                FileUpload::make('images')
-                    ->label('Изображения')
-                    ->image()
-                    ->multiple()
-                    ->maxFiles(5)
-                    ->disk('public')
-                    ->directory('products')
-                    ->reorderable()
-                    ->preserveFilenames()
-                    ->dehydrated(false),
+            Repeater::make('images')
+                ->label('Изображения')
+                ->relationship('images') // явно указана связь
+                ->schema([
+                    FileUpload::make('image_path')
+                        ->label('Изображение')
+                        ->image()
+                        ->disk('public')
+                        ->directory('products')
+                        ->required()
+                        ->preserveFilenames(),
+                ])
+                ->maxItems(5)
+                ->reorderable(),
 
-                FileUpload::make('video_file')
-                    ->label('Загрузить видео (10мб)')
-                    ->disk('public')
-                    ->directory('products/videos')
-                    ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
-                    ->maxSize(10240) // 10MB
-                    ->nullable()
-                    ->dehydrated(fn ($state) => filled($state)),
+            FileUpload::make('video_file')
+                ->label('Загрузить видео (10мб)')
+                ->disk('public')
+                ->directory('products/videos')
+                ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
+                ->maxSize(10240)
+                ->nullable()
+                ->dehydrated(fn ($state) => filled($state)),
 
-                Textarea::make('composition_care')
-                    ->label('Состав и уход')
-                    ->nullable(),
+            Textarea::make('composition_care')
+                ->label('Состав и уход')
+                ->nullable(),
 
-                CheckboxList::make('colors')
-                    ->label('Цвета')
-                    ->relationship('colors', 'name')
-                    ->options(Color::all()->pluck('name', 'id')->toArray()),
+            CheckboxList::make('colors')
+                ->label('Цвета')
+                ->relationship('colors', 'name'),
 
-                CheckboxList::make('sizes')
-                    ->label('Размеры')
-                    ->relationship('sizes', 'name')
-                    ->options(Size::all()->pluck('name', 'id')->toArray()),
+            CheckboxList::make('sizes')
+                ->label('Размеры')
+                ->relationship('sizes', 'name'),
 
-                Forms\Components\KeyValue::make('preference')
-                    ->label('Обмеры')
-                    ->nullable()
-                    ->formatStateUsing(fn ($state) => is_string($state) ? json_decode($state, true) : $state)
-                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? json_encode($state) : $state),
+            Forms\Components\KeyValue::make('preference')
+                ->label('Обмеры')
+                ->nullable(),
 
-                Forms\Components\KeyValue::make('measurements')
-                    ->label('Параметры модели')
-                    ->nullable()
-                    ->formatStateUsing(fn ($state) => is_string($state) ? json_decode($state, true) : $state)
-                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? json_encode($state) : $state),
+            Forms\Components\KeyValue::make('measurements')
+                ->label('Параметры модели')
+                ->nullable(),
 
-
-                TextInput::make('price')
-                    ->label('Цена')
-                    ->required()
-                    ->numeric()
-                    ->prefix('руб.')
-                    ->minValue(0),
-
-            ]);
-    }
+            TextInput::make('price')
+                ->label('Цена')
+                ->required()
+                ->numeric()
+                ->prefix('руб.')
+                ->minValue(0),
+        ]);
+}
 
     public static function table(Table $table): Table
     {
