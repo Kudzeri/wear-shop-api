@@ -50,11 +50,9 @@ class ProductResource extends Resource
                     ->multiple()
                     ->disk('public')
                     ->directory('products')
-                    ->relationship('images', 'image_path')
                     ->reorderable()
                     ->moveFiles()
                     ->preserveFilenames(),
-                
 
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
@@ -99,7 +97,11 @@ class ProductResource extends Resource
                     ->prefix('руб.')
                     ->minValue(0),
 
-            ]);
+            ])->afterSave(function ($record, $data) {
+                if (isset($data['images'])) {
+                    $record->syncImagesAdm($data['images']);
+                }
+            });
     }
 
     public static function table(Table $table): Table
