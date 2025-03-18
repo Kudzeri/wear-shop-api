@@ -19,6 +19,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends Resource
 {
@@ -45,13 +46,12 @@ class ProductResource extends Resource
                     ->label('Описание товара')
                     ->required(),
 
-                    FileUpload::make('images')
+                FileUpload::make('images')
                     ->label('Изображения')
                     ->multiple()
                     ->disk('public')
                     ->directory('products')
                     ->reorderable()
-                    ->moveFiles()
                     ->preserveFilenames()
                     ->dehydrated(false),
 
@@ -108,7 +108,9 @@ class ProductResource extends Resource
             ->columns([
                 ImageColumn::make('images')
                     ->label('Изображение')
-                    ->getStateUsing(fn ($record) => optional($record->images->first())->image_path)
+                    ->getStateUsing(fn ($record) => is_array($record->images) && count($record->images)
+                        ? Storage::url($record->images[0]['image_path'] ?? '')
+                        : null)
                     ->disk('public')
                     ->square()
                     ->sortable(),
