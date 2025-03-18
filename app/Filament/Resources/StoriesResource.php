@@ -33,10 +33,10 @@ class StoriesResource extends Resource
                 TextInput::make('title')
                         ->label('Заголовок')
                         ->required(),
-                FileUpload::make('image_url')
-                    ->image()
-                    ->label('Изображение')
-                    ->required(),
+                TextInput::make('image_url')
+                    ->label('Изображение (ссылка)')
+                    ->required()
+                    ->rules('url'),
 
                 Select::make('products')
                     ->label('Товары')

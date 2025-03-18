@@ -25,11 +25,10 @@ class StylistResource extends Resource
                 TextInput::make('title')
                         ->label('Заголовок')
                         ->required(),
-                FileUpload::make('image_url')
-                    ->image()
-                    ->label('Фото выбора стилиста')
-                    // ->dehydrateStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Удалено
-                    ->required(),
+                TextInput::make('image_url')
+                    ->label('Фото выбора стилиста (ссылка)')
+                    ->required()
+                    ->rules('url'),
 
                 Select::make('products')
                     ->label('Товары')
