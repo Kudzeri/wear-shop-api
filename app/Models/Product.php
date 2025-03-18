@@ -40,7 +40,7 @@ class Product extends Model
         'name',
         'category_id',
         'description',
-        'images',
+        //'images',
         'video_file',
         'composition_care',
         'preference',
