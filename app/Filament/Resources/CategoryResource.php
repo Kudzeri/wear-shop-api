@@ -47,8 +47,9 @@ class CategoryResource extends Resource
                     ->directory('categories')
                     ->previewable()
                     ->reorderable()
-                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName())  // Корректное сохранение пути
-                    ->dehydrated(false) // Не очищает значение, если ничего не загружено
+                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName())
+                    ->getUploadedFileUrlUsing(fn(string $filePath): ?string => "https://siveno.shop/" . $filePath) // Добавлено
+                    ->dehydrated(false)
                     ->nullable(),
 
                 Toggle::make('is_sale')

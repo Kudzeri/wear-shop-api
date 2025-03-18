@@ -53,6 +53,7 @@ class UserResource extends Resource
                 Forms\Components\FileUpload::make('avatar_url')
                     ->label('Аватар')
                     ->image()
+                    ->getUploadedFileUrlUsing(fn(string $filePath): ?string => "https://siveno.shop/" . $filePath)
                     ->nullable(),
 
                 Forms\Components\Select::make('role')
