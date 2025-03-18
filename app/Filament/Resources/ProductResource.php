@@ -53,7 +53,6 @@ class ProductResource extends Resource
                     ->reorderable()
                     ->moveFiles()
                     ->preserveFilenames()
-                    ->dehydrateStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Исправлено
                     ->afterStateUpdated(function ($state, $record) {
                         if ($record) {
                             $record->syncImagesAdm($state);

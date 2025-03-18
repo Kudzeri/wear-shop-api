@@ -28,7 +28,7 @@ class StylistResource extends Resource
                 FileUpload::make('image_url')
                     ->image()
                     ->label('Фото выбора стилиста')
-                    ->dehydrateStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Исправлено
+                    // ->dehydrateStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Удалено
                     ->required(),
 
                 Select::make('products')
