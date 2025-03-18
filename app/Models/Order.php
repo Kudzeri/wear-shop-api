@@ -88,7 +88,11 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'address_id', 'total_price', 'status', 'delivery', 'payment_id'
+        'user_id', 'address_id', 'total_price', 'status', 'delivery', 'payment_id',
+        'delivery_service_id',      // связь с DeliveryService (id службы доставки на сайте)
+        'delivery_service_1c',      // идентификатор службы доставки в 1С
+        'pickup_point_id',          // связь с PickUpPoint (id ПВЗ на сайте)
+        'pickup_point_1c',          // идентификатор ПВЗ в 1С
     ];
 
     public function user():BelongsTo
@@ -109,6 +113,43 @@ class Order extends Model
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    // Отношение с моделью DeliveryService
+    public function deliveryService()
+    {
+        return $this->belongsTo(\App\Models\DeliveryService::class, 'delivery_service_id');
+    }
+
+    // Отношение с моделью PickUpPoint
+    public function pickupPoint()
+    {
+        return $this->belongsTo(\App\Models\PickUpPoint::class, 'pickup_point_id');
+    }
+    
+    // Обновленная бизнес-логика заказа с учетом нового функционала
+    public function updateOrderLogic()
+    {
+        // ...existing logic...
+        
+        if ($this->delivery_service_id) {
+            // Логика обработки службы доставки:
+            // Например, устанавливаем статус "processing" и отправляем уведомление
+            $this->status = 'processing';
+            // ...дополнительная логика (например, уведомление через email)...
+        }
+        
+        if ($this->pickup_point_id) {
+            // Логика обработки пункта выдачи:
+            // Например, отмечаем, что уведомление о пункте выдачи было отправлено
+            // $this->pickup_notification_sent = true;
+            // ...дополнительная логика...
+        }
+        
+        // Сохраняем изменения заказа
+        $this->save();
+        
+        // ...existing logic...
     }
 
 }

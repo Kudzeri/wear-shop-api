@@ -16,7 +16,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WishlistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SizeController;
-
+use App\Http\Controllers\Report1CController;
+use App\Http\Controllers\DeliveryServiceController;
 
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
@@ -101,6 +102,20 @@ Route::middleware('auth:api')->group(function () {
     });
 });
 
+// Новые роуты для служб доставки
+Route::get('/delivery-services', [DeliveryServiceController::class, 'index']);
+Route::post('/delivery-services', [DeliveryServiceController::class, 'store']);
+Route::get('/delivery-services/{id}', [DeliveryServiceController::class, 'show']);
+Route::put('/delivery-services/{id}', [DeliveryServiceController::class, 'update']);
+Route::delete('/delivery-services/{id}', [DeliveryServiceController::class, 'destroy']);
+
+// Новые роуты для пунктов самовывоза (PickUpPoint)
+Route::get('/pickup-points', [\App\Http\Controllers\PickUpPointController::class, 'index']);
+Route::post('/pickup-points', [\App\Http\Controllers\PickUpPointController::class, 'store']);
+Route::get('/pickup-points/{id}', [\App\Http\Controllers\PickUpPointController::class, 'show']);
+Route::put('/pickup-points/{id}', [\App\Http\Controllers\PickUpPointController::class, 'update']);
+Route::delete('/pickup-points/{id}', [\App\Http\Controllers\PickUpPointController::class, 'destroy']);
+
 // Маршруты для администратора (пример с использованием middleware проверки роли "admin")
 Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/orders', [OrderController::class, 'admIndex']);
@@ -155,3 +170,8 @@ Route::get('/stylists/{id}', [StylistController::class, 'show']);
 Route::delete('/stylists/{id}', [StylistController::class, 'destroy']);
 Route::post('/stylists/{stylist}/products', [StylistController::class, 'addProduct']);
 Route::delete('/stylists/{stylist}/products', [StylistController::class, 'removeProduct']);
+
+Route::get('/reports/customers', [Report1CController::class, 'exportCustomers']);
+Route::get('/reports/products', [Report1CController::class, 'exportProducts']);
+Route::get('/reports/promos', [Report1CController::class, 'exportPromos']);
+Route::get('/reports/orders', [Report1CController::class, 'exportOrders']);

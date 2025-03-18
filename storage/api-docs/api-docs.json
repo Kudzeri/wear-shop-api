@@ -1331,6 +1331,136 @@
                 }
             }
         },
+        "/delivery-services": {
+            "get": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Получить список служб доставки",
+                "operationId": "aec79c3e28a08541fd74c87786ceb135",
+                "responses": {
+                    "200": {
+                        "description": "Список служб доставки"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Создать службу доставки",
+                "operationId": "0bfe85c221fba569118f35fbdf868c05",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeliveryService"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после создания"
+                    }
+                }
+            }
+        },
+        "/delivery-services/create": {
+            "get": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Форма создания службы доставки",
+                "operationId": "0edcdcc2ccc8655f329af175f206ecaa",
+                "responses": {
+                    "200": {
+                        "description": "Форма создания"
+                    }
+                }
+            }
+        },
+        "/delivery-services/{deliveryService}/edit": {
+            "get": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Редактировать службу доставки",
+                "operationId": "36badca1c9903fb0bf5ef64322b9da46",
+                "parameters": [
+                    {
+                        "name": "deliveryService",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Форма редактирования"
+                    }
+                }
+            }
+        },
+        "/delivery-services/{deliveryService}": {
+            "put": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Обновить службу доставки",
+                "operationId": "8a7a812f1090d38c53094cfc1f894d23",
+                "parameters": [
+                    {
+                        "name": "deliveryService",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DeliveryService"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после обновления"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "DeliveryService"
+                ],
+                "summary": "Удалить службу доставки",
+                "operationId": "ec13e38554e8f502318bc3c6201d8d4a",
+                "parameters": [
+                    {
+                        "name": "deliveryService",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после удаления"
+                    }
+                }
+            }
+        },
         "/api/loyalty/use-points": {
             "post": {
                 "tags": [
@@ -1514,6 +1644,227 @@
                 ]
             }
         },
+        "/orders": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Создание заказа",
+                "description": "Создает заказ и соответствующий платеж для авторизованного пользователя. Платеж осуществляется через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
+                "operationId": "storeOrder",
+                "requestBody": {
+                    "description": "Данные для создания заказа",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "address_id",
+                                    "items",
+                                    "delivery",
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "address_id": {
+                                        "description": "ID адреса доставки",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "items": {
+                                        "description": "Список товаров заказа",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "product_id",
+                                                "size_id",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "product_id": {
+                                                    "description": "ID продукта",
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "size_id": {
+                                                    "description": "ID размера",
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "quantity": {
+                                                    "description": "Количество товара",
+                                                    "type": "integer",
+                                                    "example": 3
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "delivery": {
+                                        "description": "Тип доставки",
+                                        "type": "string",
+                                        "example": "express"
+                                    },
+                                    "use_loyalty_points": {
+                                        "description": "Флаг использования бонусных баллов",
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "payment_method": {
+                                        "description": "Метод оплаты: 'yookassa' - через YooKassa",
+                                        "type": "string",
+                                        "enum": [
+                                            "yookassa"
+                                        ],
+                                        "example": "yookassa"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Заказ успешно создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "order": {
+                                            "description": "Объект созданного заказа",
+                                            "type": "object"
+                                        },
+                                        "payment": {
+                                            "description": "Объект созданного платежа, содержащий transaction_id, полученный от API YooKassa",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "order_id": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1500.75
+                                                },
+                                                "currency": {
+                                                    "type": "string",
+                                                    "example": "RUB"
+                                                },
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "pending"
+                                                },
+                                                "payment_method": {
+                                                    "type": "string",
+                                                    "example": "yookassa"
+                                                },
+                                                "transaction_id": {
+                                                    "type": "string",
+                                                    "example": "yookassa_5f8c9e7a6b8f7"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "discount_applied": {
+                                            "description": "Информация о примененной скидке",
+                                            "properties": {
+                                                "final_amount": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1500.75
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные данные запроса или логическая ошибка (например, сумма заказа после скидки равна 0)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Список товаров пуст"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Не авторизован"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации входящих данных",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка сервера или ошибка при инициализации платежа через YooKassa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка сервера"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Подробное описание ошибки"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/orders": {
             "get": {
                 "tags": [
@@ -1535,106 +1886,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Создание заказа",
-                "description": "Создает новый заказ с возможностью использования баллов лояльности.",
-                "operationId": "d690d6834318e9b064df441e854de8b9",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "address_id",
-                                    "items",
-                                    "delivery"
-                                ],
-                                "properties": {
-                                    "address_id": {
-                                        "description": "ID адреса доставки",
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "product_id": {
-                                                    "description": "ID товара",
-                                                    "type": "integer",
-                                                    "example": 5
-                                                },
-                                                "size_id": {
-                                                    "description": "ID размера",
-                                                    "type": "integer",
-                                                    "example": 2
-                                                },
-                                                "quantity": {
-                                                    "description": "Количество товара",
-                                                    "type": "integer",
-                                                    "example": 3
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "delivery": {
-                                        "description": "Тип доставки",
-                                        "type": "string",
-                                        "example": "Стандартная доставка"
-                                    },
-                                    "use_loyalty_points": {
-                                        "description": "Использовать баллы лояльности",
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Заказ успешно создан",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "order": {
-                                            "description": "Детали заказа",
-                                            "type": "object"
-                                        },
-                                        "payment": {
-                                            "description": "Детали платежа",
-                                            "type": "object"
-                                        },
-                                        "discount_applied": {
-                                            "description": "Примененная скидка",
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Ошибка валидации"
                     },
                     "401": {
                         "description": "Не авторизован"
@@ -1850,12 +2101,88 @@
                 ]
             }
         },
+        "/api/orders/{orderId}/confirm-payment": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Подтверждение оплаты заказа",
+                "description": "Обновляет статус заказа на 'completed' после успешной оплаты.",
+                "operationId": "263352a55c39da7585394f54416f7416",
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "in": "path",
+                        "description": "ID заказа, который необходимо подтвердить",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Оплата подтверждена, заказ завершен",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Оплата прошла успешно, заказ завершен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Заказ уже обработан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ уже обработан"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/orders": {
             "get": {
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Получить все заказы",
+                "summary": "Получить все заказы (для администратора)",
                 "description": "Позволяет администратору получить все заказы.",
                 "operationId": "getAllOrders",
                 "responses": {
@@ -1868,79 +2195,6 @@
                                     "items": {
                                         "$ref": "#/components/schemas/Order"
                                     }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Недостаточно прав"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Создать заказ (для администратора)",
-                "description": "Позволяет администратору создать заказ от имени пользователя.",
-                "operationId": "createOrderForAdmin",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "user_id",
-                                    "address_id",
-                                    "items"
-                                ],
-                                "properties": {
-                                    "user_id": {
-                                        "description": "ID пользователя, от имени которого создается заказ",
-                                        "type": "integer"
-                                    },
-                                    "address_id": {
-                                        "description": "ID адреса доставки",
-                                        "type": "integer"
-                                    },
-                                    "items": {
-                                        "type": "array",
-                                        "items": {
-                                            "properties": {
-                                                "product_id": {
-                                                    "description": "ID продукта",
-                                                    "type": "integer"
-                                                },
-                                                "size_id": {
-                                                    "description": "ID размера продукта",
-                                                    "type": "integer"
-                                                },
-                                                "quantity": {
-                                                    "description": "Количество товара",
-                                                    "type": "integer"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Создан заказ",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Order"
                                 }
                             }
                         }
@@ -2105,82 +2359,6 @@
                     },
                     "404": {
                         "description": "Заказ не найден"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/orders/{orderId}/confirm-payment": {
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Подтверждение оплаты заказа",
-                "description": "Обновляет статус заказа на 'completed' после успешной оплаты.",
-                "operationId": "263352a55c39da7585394f54416f7416",
-                "parameters": [
-                    {
-                        "name": "orderId",
-                        "in": "path",
-                        "description": "ID заказа, который необходимо подтвердить",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Оплата подтверждена, заказ завершен",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Оплата прошла успешно, заказ завершен"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Заказ уже обработан",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Заказ уже обработан"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Заказ не найден",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Заказ не найден"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
                     }
                 },
                 "security": [
@@ -2436,6 +2614,136 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/pick-up-points": {
+            "get": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Получить список ПВЗ",
+                "operationId": "f644a4871e056589b555691614d8db4d",
+                "responses": {
+                    "200": {
+                        "description": "Список пунктов выдачи"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Создать ПВЗ",
+                "operationId": "4edd2177aeecfe49b0a613135a1f111c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickUpPoint"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после создания"
+                    }
+                }
+            }
+        },
+        "/pick-up-points/create": {
+            "get": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Форма создания ПВЗ",
+                "operationId": "8b221397085d5e35b7ef5d521c320421",
+                "responses": {
+                    "200": {
+                        "description": "Форма создания"
+                    }
+                }
+            }
+        },
+        "/pick-up-points/{pickUpPoint}/edit": {
+            "get": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Редактировать ПВЗ",
+                "operationId": "24b7fc79218d667c71e09dfea471b706",
+                "parameters": [
+                    {
+                        "name": "pickUpPoint",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Форма редактирования"
+                    }
+                }
+            }
+        },
+        "/pick-up-points/{pickUpPoint}": {
+            "put": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Обновить ПВЗ",
+                "operationId": "965132a8aac9cd278c874a44db078da1",
+                "parameters": [
+                    {
+                        "name": "pickUpPoint",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PickUpPoint"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после обновления"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "PickUpPoint"
+                ],
+                "summary": "Удалить ПВЗ",
+                "operationId": "69dc428613a2dcc2d3f451e1f4f1f1db",
+                "parameters": [
+                    {
+                        "name": "pickUpPoint",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Перенаправление после удаления"
+                    }
+                }
             }
         },
         "/api/products": {
@@ -2849,6 +3157,572 @@
                 }
             }
         },
+        "/api/reports/customers": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Экспорт клиентов",
+                "operationId": "7f8a5c492c47c44a33b9090479fab847",
+                "responses": {
+                    "200": {
+                        "description": "Файл экспорта клиентов"
+                    }
+                }
+            }
+        },
+        "/api/reports/orders": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Экспорт заказов",
+                "operationId": "b29d92baa463224f9c4f27ea8e8b0cfc",
+                "responses": {
+                    "200": {
+                        "description": "Файл экспорта заказов"
+                    }
+                }
+            }
+        },
+        "/api/reports/products": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Экспорт продуктов",
+                "operationId": "b1fe35a4b47ced148c99e9c82c382ec1",
+                "responses": {
+                    "200": {
+                        "description": "Файл экспорта продуктов"
+                    }
+                }
+            }
+        },
+        "/api/reports/promos": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Экспорт промо-кодов",
+                "operationId": "c15e4e1a62cdb721694a147cdaf1633f",
+                "responses": {
+                    "200": {
+                        "description": "Файл экспорта промо-кодов"
+                    }
+                }
+            }
+        },
+        "/russian-post/calculate-delivery": {
+            "post": {
+                "tags": [
+                    "RussianPost"
+                ],
+                "summary": "Расчет стоимости доставки через Почту России",
+                "description": "Вычисляет стоимость доставки через Почту России по заданным параметрам: почтовые индексы отправителя и получателя, вес и размеры посылки.",
+                "operationId": "russianPostCalculateDelivery",
+                "requestBody": {
+                    "description": "Параметры для расчёта доставки",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "from_postcode",
+                                    "to_postcode",
+                                    "weight",
+                                    "length",
+                                    "width",
+                                    "height"
+                                ],
+                                "properties": {
+                                    "from_postcode": {
+                                        "description": "Почтовый индекс отправителя",
+                                        "type": "string",
+                                        "example": "101000"
+                                    },
+                                    "to_postcode": {
+                                        "description": "Почтовый индекс получателя",
+                                        "type": "string",
+                                        "example": "190000"
+                                    },
+                                    "weight": {
+                                        "description": "Вес посылки в кг",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5
+                                    },
+                                    "length": {
+                                        "description": "Длина посылки в см",
+                                        "type": "number",
+                                        "example": 30
+                                    },
+                                    "width": {
+                                        "description": "Ширина посылки в см",
+                                        "type": "number",
+                                        "example": 20
+                                    },
+                                    "height": {
+                                        "description": "Высота посылки в см",
+                                        "type": "number",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Стоимость доставки рассчитана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка расчёта доставки через Почту России",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка расчёта доставки через Почту России"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/russian-post/create-shipment": {
+            "post": {
+                "tags": [
+                    "RussianPost"
+                ],
+                "summary": "Создание отправления через Почту России",
+                "description": "Создает отправление (заказ) через Почту России, используя данные получателя, отправителя и параметры посылки.",
+                "operationId": "russianPostCreateShipment",
+                "requestBody": {
+                    "description": "Данные отправления",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "recipient",
+                                    "sender",
+                                    "package"
+                                ],
+                                "properties": {
+                                    "recipient": {
+                                        "description": "Данные получателя",
+                                        "type": "object",
+                                        "example": {
+                                            "name": "Иван Иванов",
+                                            "postcode": "190000",
+                                            "address": "г. Санкт-Петербург, ул. Пушкина, д.10",
+                                            "phone": "79991234567"
+                                        }
+                                    },
+                                    "sender": {
+                                        "description": "Данные отправителя",
+                                        "type": "object",
+                                        "example": {
+                                            "name": "ООО Ромашка",
+                                            "postcode": "101000",
+                                            "address": "г. Москва, ул. Ленина, д.1",
+                                            "phone": "84991234567"
+                                        }
+                                    },
+                                    "package": {
+                                        "description": "Параметры посылки",
+                                        "type": "object",
+                                        "example": {
+                                            "weight": 1.5,
+                                            "length": 30,
+                                            "width": 20,
+                                            "height": 10
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Отправление успешно создано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка создания отправления через Почту России",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка создания отправления через Почту России"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/russian-post/track-shipment": {
+            "post": {
+                "tags": [
+                    "RussianPost"
+                ],
+                "summary": "Отслеживание отправления через Почту России",
+                "description": "Возвращает информацию о статусе отправления по номеру отслеживания.",
+                "operationId": "russianPostTrackShipment",
+                "requestBody": {
+                    "description": "Номер отслеживания отправления",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "trackingNumber"
+                                ],
+                                "properties": {
+                                    "trackingNumber": {
+                                        "description": "Номер отслеживания отправления",
+                                        "type": "string",
+                                        "example": "PO123456789RU"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Информация об отправлении получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка отслеживания отправления через Почту России",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка отслеживания отправления через Почту России"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/sdek/calculate-delivery": {
+            "post": {
+                "tags": [
+                    "SDEK"
+                ],
+                "summary": "Расчет стоимости доставки через СДЭК (v2)",
+                "description": "Вычисляет стоимость доставки через СДЭК по заданным параметрам: ID города отправителя, ID города получателя, вес и размеры посылки.",
+                "operationId": "sdekCalculateDelivery",
+                "requestBody": {
+                    "description": "Параметры для расчёта доставки",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "senderCityId",
+                                    "receiverCityId",
+                                    "weight",
+                                    "length",
+                                    "width",
+                                    "height"
+                                ],
+                                "properties": {
+                                    "senderCityId": {
+                                        "description": "ID города отправителя",
+                                        "type": "integer",
+                                        "example": 44
+                                    },
+                                    "receiverCityId": {
+                                        "description": "ID города получателя",
+                                        "type": "integer",
+                                        "example": 137
+                                    },
+                                    "weight": {
+                                        "description": "Вес посылки в кг",
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5
+                                    },
+                                    "length": {
+                                        "description": "Длина посылки в см",
+                                        "type": "number",
+                                        "example": 30
+                                    },
+                                    "width": {
+                                        "description": "Ширина посылки в см",
+                                        "type": "number",
+                                        "example": 20
+                                    },
+                                    "height": {
+                                        "description": "Высота посылки в см",
+                                        "type": "number",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Стоимость доставки рассчитана",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка расчёта доставки через СДЭК",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка расчёта доставки через СДЭК"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/sdek/create-shipment": {
+            "post": {
+                "tags": [
+                    "SDEK"
+                ],
+                "summary": "Создание отправления через СДЭК (v2)",
+                "description": "Создает отправление (заказ) через СДЭК, используя переданные данные: уникальный номер заказа, данные отправителя и получателя, тарифный код и параметры посылки.",
+                "operationId": "sdekCreateShipment",
+                "requestBody": {
+                    "description": "Данные отправления",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "number",
+                                    "sender",
+                                    "receiver",
+                                    "tariff_code",
+                                    "package"
+                                ],
+                                "properties": {
+                                    "number": {
+                                        "description": "Уникальный номер заказа",
+                                        "type": "string",
+                                        "example": "ORDER-12345"
+                                    },
+                                    "sender": {
+                                        "description": "Данные отправителя",
+                                        "type": "object",
+                                        "example": {
+                                            "name": "ООО Ромашка",
+                                            "address": "г. Москва, ул. Ленина, д.1",
+                                            "phone": "84991234567"
+                                        }
+                                    },
+                                    "receiver": {
+                                        "description": "Данные получателя",
+                                        "type": "object",
+                                        "example": {
+                                            "name": "Иван Иванов",
+                                            "address": "г. Санкт-Петербург, ул. Пушкина, д.10",
+                                            "phone": "79991234567"
+                                        }
+                                    },
+                                    "tariff_code": {
+                                        "description": "Код тарифа СДЭК",
+                                        "type": "integer",
+                                        "example": 137
+                                    },
+                                    "package": {
+                                        "description": "Параметры посылки",
+                                        "type": "object",
+                                        "example": {
+                                            "weight": 1.5,
+                                            "length": 30,
+                                            "width": 20,
+                                            "height": 10
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Отправление успешно создано",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка создания отправления через СДЭК",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка создания отправления через СДЭК"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/sdek/track-shipment": {
+            "post": {
+                "tags": [
+                    "SDEK"
+                ],
+                "summary": "Отслеживание отправления через СДЭК (v2)",
+                "description": "Возвращает статус отправления через СДЭК по уникальному номеру заказа.",
+                "operationId": "sdekTrackShipment",
+                "requestBody": {
+                    "description": "Номер заказа для отслеживания отправления",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "orderNumber"
+                                ],
+                                "properties": {
+                                    "orderNumber": {
+                                        "description": "Уникальный номер заказа, используемый для отслеживания",
+                                        "type": "string",
+                                        "example": "ORDER-12345"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Информация о статусе отправления получена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка отслеживания отправления через СДЭК",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка отслеживания отправления через СДЭК"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/sizes": {
             "get": {
                 "tags": [
@@ -3002,6 +3876,430 @@
                     },
                     "404": {
                         "description": "Размер не найден"
+                    }
+                }
+            }
+        },
+        "/api/stories": {
+            "get": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Получить список сторисов с пагинацией",
+                "operationId": "85a8aaaa2e289a5e71d86110ca157a93",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список сторисов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Story"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Создать новый сторис",
+                "operationId": "f6f11b14595376c9b47f393c5dfc6d0f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "image_url"
+                                ],
+                                "properties": {
+                                    "image_url": {
+                                        "type": "string",
+                                        "example": "https://example.com/story.jpg"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Сторис создан"
+                    }
+                }
+            }
+        },
+        "/api/stories/{id}": {
+            "get": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Получить конкретный сторис",
+                "operationId": "7551e103bbb8b65b7b1127a79134ed32",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID сториса",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация о сторисе",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Story"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Удалить сторис",
+                "operationId": "58cdaab9fbacdbe3ec77dc5c5563500e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID сториса",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сторис удален"
+                    }
+                }
+            }
+        },
+        "/api/stories/{story}/products": {
+            "post": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Добавить товар в сторис",
+                "operationId": "c752a503762f6949ed035820ec5fa140",
+                "parameters": [
+                    {
+                        "name": "story",
+                        "in": "path",
+                        "description": "ID сториса",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Товар добавлен"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Stories"
+                ],
+                "summary": "Удалить товар из сториса",
+                "operationId": "9824a2d1dad300d0fffedf8c979d6745",
+                "parameters": [
+                    {
+                        "name": "story",
+                        "in": "path",
+                        "description": "ID сториса",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Товар удален"
+                    }
+                }
+            }
+        },
+        "/api/stylists": {
+            "get": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Получить список стилистов с пагинацией",
+                "operationId": "4af81c7055c286e0792cf0352ae926d1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список стилистов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Stylist"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Создать нового стилиста",
+                "operationId": "b0b4610a14ad3cd59c999d32593d9523",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "image_url"
+                                ],
+                                "properties": {
+                                    "image_url": {
+                                        "type": "string",
+                                        "example": "https://example.com/stylist.jpg"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Стилист создан"
+                    }
+                }
+            }
+        },
+        "/api/stylists/{id}": {
+            "get": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Получить конкретного стилиста",
+                "operationId": "9fee8701ba3e53b6589bb0b980f3f91a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID стилиста",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация о стилисте",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Stylist"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Удалить стилиста",
+                "operationId": "50c1e31cf1c24e9767f7c2a1d80aaf4c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID стилиста",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Стилист удален"
+                    }
+                }
+            }
+        },
+        "/api/stylists/{stylist}/products": {
+            "post": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Добавить товар к стилисту",
+                "operationId": "242bec87d0b25a0755db7088dafc4170",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "ID стилиста",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Товар добавлен"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Stylists"
+                ],
+                "summary": "Удалить товар у стилиста",
+                "operationId": "458dcc8f054375b56e1a8d01f6eeea76",
+                "parameters": [
+                    {
+                        "name": "stylist",
+                        "in": "path",
+                        "description": "ID стилиста",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Товар удален"
                     }
                 }
             }
@@ -3469,83 +4767,6 @@
     },
     "components": {
         "schemas": {
-            "Order": {
-                "required": [
-                    "id",
-                    "user_id",
-                    "address_id",
-                    "total_price",
-                    "status"
-                ],
-                "properties": {
-                    "id": {
-                        "description": "ID заказа",
-                        "type": "integer"
-                    },
-                    "user_id": {
-                        "description": "ID пользователя",
-                        "type": "integer"
-                    },
-                    "address_id": {
-                        "description": "ID адреса доставки",
-                        "type": "integer"
-                    },
-                    "total_price": {
-                        "description": "Общая сумма заказа",
-                        "type": "number",
-                        "format": "float"
-                    },
-                    "status": {
-                        "description": "Статус заказа",
-                        "type": "string",
-                        "enum": [
-                            "pending",
-                            "processed",
-                            "shipped",
-                            "delivered",
-                            "cancelled"
-                        ]
-                    },
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/components/schemas/OrderItem"
-                        }
-                    },
-                    "address": {
-                        "$ref": "#/components/schemas/Address"
-                    }
-                },
-                "type": "object"
-            },
-            "OrderItem": {
-                "required": [
-                    "product_id",
-                    "size_id",
-                    "quantity",
-                    "price"
-                ],
-                "properties": {
-                    "product_id": {
-                        "description": "ID продукта",
-                        "type": "integer"
-                    },
-                    "size_id": {
-                        "description": "ID размера продукта",
-                        "type": "integer"
-                    },
-                    "quantity": {
-                        "description": "Количество товара",
-                        "type": "integer"
-                    },
-                    "price": {
-                        "description": "Цена товара",
-                        "type": "number",
-                        "format": "float"
-                    }
-                },
-                "type": "object"
-            },
             "Address": {
                 "title": "Адрес",
                 "description": "Модель адреса пользователя",
@@ -3680,95 +4901,234 @@
                 },
                 "type": "object"
             },
+            "DeliveryService": {
+                "required": [
+                    "id_delivery_service",
+                    "id_delivery_service_1c",
+                    "delivery_service"
+                ],
+                "properties": {
+                    "id_delivery_service": {
+                        "description": "Уникальный идентификатор на сайте",
+                        "type": "integer"
+                    },
+                    "id_delivery_service_1c": {
+                        "description": "Уникальный идентификатор в 1С",
+                        "type": "string"
+                    },
+                    "delivery_service": {
+                        "description": "Название службы доставки",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Order": {
+                "title": "Order",
+                "required": [
+                    "id_order",
+                    "date_order",
+                    "order_amount"
+                ],
+                "properties": {
+                    "id_order": {
+                        "description": "Уникальный идентификатор заказа на сайте",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "date_order": {
+                        "description": "Дата создания заказа",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 12:30:00"
+                    },
+                    "number_order_1c": {
+                        "description": "Номер заказа в 1С",
+                        "type": "string",
+                        "example": "1001"
+                    },
+                    "date_order_1c": {
+                        "description": "Дата заказа в 1С",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-10-01 12:30:00"
+                    },
+                    "order_amount": {
+                        "description": "Сумма заказа",
+                        "type": "number",
+                        "format": "float",
+                        "example": 250.75
+                    }
+                },
+                "type": "object"
+            },
+            "PickUpPoint": {
+                "required": [
+                    "id_pickup_point",
+                    "id_pickup_point_1c",
+                    "pick_up_point",
+                    "id_delivery_service",
+                    "id_delivery_service_1c"
+                ],
+                "properties": {
+                    "id_pickup_point": {
+                        "description": "Уникальный идентификатор ПВЗ на сайте",
+                        "type": "integer"
+                    },
+                    "id_pickup_point_1c": {
+                        "description": "Уникальный идентификатор ПВЗ в 1С",
+                        "type": "string"
+                    },
+                    "pick_up_point": {
+                        "description": "Наименование пункта выдачи заказа",
+                        "type": "string"
+                    },
+                    "id_delivery_service": {
+                        "description": "Уникальный идентификатор службы доставки на сайте",
+                        "type": "integer"
+                    },
+                    "id_delivery_service_1c": {
+                        "description": "Уникальный идентификатор службы доставки в 1С",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
             "Product": {
-                "title": "Продукт",
+                "title": "Product",
                 "description": "Модель продукта",
                 "required": [
-                    "id",
-                    "name",
-                    "category_id",
+                    "id_product",
+                    "id_product_1c",
+                    "title",
+                    "article",
                     "description",
-                    "price"
+                    "unit",
+                    "image_urls",
+                    "price",
+                    "weight",
+                    "length",
+                    "width",
+                    "height",
+                    "ready"
                 ],
+                "properties": {
+                    "id_product": {
+                        "description": "Уникальный идентификатор товара на сайте",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "id_product_1c": {
+                        "description": "Уникальный идентификатор товара в 1С",
+                        "type": "string",
+                        "example": "1c-001"
+                    },
+                    "title": {
+                        "description": "Наименование товара",
+                        "type": "string",
+                        "example": "Футболка"
+                    },
+                    "article": {
+                        "description": "Артикул товара",
+                        "type": "string",
+                        "example": "ABC123"
+                    },
+                    "description": {
+                        "description": "Описание товара",
+                        "type": "string",
+                        "example": "Полное описание товара"
+                    },
+                    "unit": {
+                        "description": "Единица измерения",
+                        "type": "string",
+                        "example": "шт"
+                    },
+                    "image_urls": {
+                        "description": "Ссылки на изображения",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "https://example.com/image.jpg"
+                        }
+                    },
+                    "price": {
+                        "description": "Цена продажи",
+                        "type": "number",
+                        "format": "float",
+                        "example": 199.99
+                    },
+                    "weight": {
+                        "description": "Вес в килограммах",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.5
+                    },
+                    "length": {
+                        "description": "Длина в сантиметрах",
+                        "type": "number",
+                        "format": "float",
+                        "example": 30
+                    },
+                    "width": {
+                        "description": "Ширина в сантиметрах",
+                        "type": "number",
+                        "format": "float",
+                        "example": 20
+                    },
+                    "height": {
+                        "description": "Высота в сантиметрах",
+                        "type": "number",
+                        "format": "float",
+                        "example": 10
+                    },
+                    "ready": {
+                        "description": "Флаг выгрузки/изменения карты товара в 1С",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Story": {
+                "title": "Story",
+                "description": "Модель сториса",
+                "properties": {
+                    "id": {
+                        "description": "ID сториса",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "image_url": {
+                        "description": "Ссылка на изображение",
+                        "type": "string",
+                        "example": "https://example.com/story.jpg"
+                    },
+                    "products": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Product"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Stylist": {
+                "title": "Stylist",
+                "description": "Модель выбора стилиста",
                 "properties": {
                     "id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "name": {
+                    "image_url": {
                         "type": "string",
-                        "example": "Футболка 'Rich as'"
+                        "example": "https://example.com/stylist.jpg"
                     },
-                    "category_id": {
-                        "type": "integer",
-                        "example": 18
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Описание продукта"
-                    },
-                    "video_url": {
-                        "type": "string",
-                        "example": "https://example.com/video.mp4",
-                        "nullable": true
-                    },
-                    "price": {
-                        "type": "number",
-                        "format": "float",
-                        "example": 5760
-                    },
-                    "image_urls": {
+                    "products": {
                         "type": "array",
                         "items": {
-                            "type": "string",
-                            "example": "https://example.com/image1.jpg"
+                            "$ref": "#/components/schemas/Product"
                         }
-                    },
-                    "preference": {
-                        "properties": {
-                            "S": {
-                                "properties": {
-                                    "длина": {
-                                        "type": "integer",
-                                        "example": 60
-                                    },
-                                    "обхват_груди": {
-                                        "type": "integer",
-                                        "example": 90
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "measurements": {
-                        "properties": {
-                            "S": {
-                                "properties": {
-                                    "длина": {
-                                        "type": "integer",
-                                        "example": 60
-                                    },
-                                    "обхват_груди": {
-                                        "type": "integer",
-                                        "example": 90
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        },
-                        "type": "object"
-                    },
-                    "created_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2024-02-06T12:34:56Z"
-                    },
-                    "updated_at": {
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2024-02-06T12:34:56Z"
                     }
                 },
                 "type": "object"
@@ -3789,12 +5149,26 @@
             "description": "CRUD операции с цветами"
         },
         {
+            "name": "DeliveryService"
+        },
+        {
             "name": "Loyalty",
             "description": "Программа лояльности"
         },
         {
+            "name": "PickUpPoint"
+        },
+        {
             "name": "Sizes",
             "description": "Управление размерами товаров"
+        },
+        {
+            "name": "Stories",
+            "description": "API для работы со сторисами"
+        },
+        {
+            "name": "Stylists",
+            "description": "API для работы с выборами стилистов"
         },
         {
             "name": "User",
@@ -3827,6 +5201,18 @@
         {
             "name": "Products",
             "description": "Products"
+        },
+        {
+            "name": "Reports",
+            "description": "Reports"
+        },
+        {
+            "name": "RussianPost",
+            "description": "RussianPost"
+        },
+        {
+            "name": "SDEK",
+            "description": "SDEK"
         }
     ]
 }

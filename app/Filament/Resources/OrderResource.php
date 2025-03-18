@@ -81,7 +81,18 @@ class OrderResource extends Resource
                             ->prefix('₽'),
                     ])
                     ->columns(2)
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
+
+                Forms\Components\TextInput::make('delivery_service_id')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\TextInput::make('delivery_service_1c')
+                    ->required(),
+                Forms\Components\TextInput::make('pickup_point_id')
+                    ->numeric()
+                    ->required(),
+                Forms\Components\TextInput::make('pickup_point_1c')
+                    ->required(),
             ]);
     }
 
@@ -119,6 +130,11 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('delivery_service_id'),
+                Tables\Columns\TextColumn::make('delivery_service_1c'),
+                Tables\Columns\TextColumn::make('pickup_point_id'),
+                Tables\Columns\TextColumn::make('pickup_point_1c'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
