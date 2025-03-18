@@ -22,6 +22,9 @@ class StylistResource extends Resource
     {
         return $form
             ->schema([
+                TextInput::make('title')
+                        ->label('Заголовок')
+                        ->required(),
                 FileUpload::make('image_url')
                     ->image()
                     ->label('Фото выбора стилиста')

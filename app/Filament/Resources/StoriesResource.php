@@ -17,6 +17,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Forms\Components\TextInput;
 
 class StoriesResource extends Resource
 {
@@ -29,6 +30,9 @@ class StoriesResource extends Resource
     {
         return $form
             ->schema([
+                TextInput::make('title')
+                        ->label('Заголовок')
+                        ->required(),
                 FileUpload::make('image_url')
                     ->image()
                     ->label('Изображение')
