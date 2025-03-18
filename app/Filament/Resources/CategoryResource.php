@@ -43,11 +43,7 @@ class CategoryResource extends Resource
 
                 FileUpload::make('image')
                     ->label('Изображение')
-                    ->disk('public')
-                    ->directory('categories')
-                    ->previewable()
-                    ->reorderable()
-                    ->getUploadedFileNameForStorageUsing(fn($file) => 'categories/' . $file->hashName())
+                    ->image()
                     ->nullable(),
 
                 Toggle::make('is_sale')

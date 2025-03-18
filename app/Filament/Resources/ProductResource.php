@@ -45,20 +45,16 @@ class ProductResource extends Resource
                     ->label('Описание товара')
                     ->required(),
 
-                FileUpload::make('images')
+                    FileUpload::make('images')
                     ->label('Изображения')
                     ->multiple()
                     ->disk('public')
                     ->directory('products')
+                    ->relationship('images', 'image_path')
                     ->reorderable()
                     ->moveFiles()
-                    ->preserveFilenames()
-                    ->afterStateUpdated(function ($state, $record) {
-                        if ($record) {
-                            $record->syncImagesAdm($state);
-                        }
-                    })
-                    ->dehydrated(fn ($state) => filled($state)),
+                    ->preserveFilenames(),
+                
 
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
