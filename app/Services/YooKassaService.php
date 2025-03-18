@@ -13,15 +13,18 @@ class YooKassaService
 
     public function __construct()
     {
-        $this->client = new Client();
-        $this->client->setAuth(
-            config('services.yookassa.shop_id'),
-            config('services.yookassa.secret_key')
-        );
+        $shopId = config('services.yookassa.shop_id');
+        $secretKey = config('services.yookassa.secret_key');
+
+        // Если параметры отсутствуют, не инициализируем клиент
+        if ($shopId && $secretKey) {
+            $this->client = new Client();
+            $this->client->setAuth($shopId, $secretKey);
+        }
     }
 
     /**
-     * Создание платежа в YooKassa.
+     * Создание платежа в YooKassa с fallback-логикой.
      *
      * @param float  $amount        Сумма платежа
      * @param string $description   Описание платежа
@@ -30,6 +33,22 @@ class YooKassaService
      */
     public function createPayment(float $amount, string $description, string $paymentMethod)
     {
+        // Если параметры подключения не заданы, возвращаем dummy-объект
+        if (empty(config('services.yookassa.shop_id')) || empty(config('services.yookassa.secret_key')) || !isset($this->client)) {
+            return new class {
+                public function getId() {
+                    return 'dummy-transaction-id';
+                }
+                public function getConfirmation() {
+                    return new class {
+                        public function getConfirmationUrl() {
+                            return url('/dummy-payment');
+                        }
+                    };
+                }
+            };
+        }
+
         try {
             $payment = $this->client->createPayment([
                 'amount' => [

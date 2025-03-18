@@ -13,32 +13,22 @@ use Illuminate\Support\Facades\Storage;
  * @OA\Schema(
  *     schema="Product",
  *     type="object",
- *     title="Продукт",
+ *     title="Product",
  *     description="Модель продукта",
- *     required={"id", "name", "category_id", "description", "price"},
- *     @OA\Property(property="id", type="integer", example=1),
- *     @OA\Property(property="name", type="string", example="Футболка 'Rich as'"),
- *     @OA\Property(property="category_id", type="integer", example=18),
- *     @OA\Property(property="description", type="string", example="Описание продукта"),
- *     @OA\Property(property="video_url", type="string", nullable=true, example="https://example.com/video.mp4"),
- *     @OA\Property(property="price", type="number", format="float", example=5760),
- *     @OA\Property(property="discount_percentage", type="number", format="float", example=10),
- *     @OA\Property(property="is_discount", type="boolean", example=true),
- *     @OA\Property(property="image_urls", type="array", @OA\Items(type="string", example="https://example.com/image1.jpg")),
- *     @OA\Property(property="preference", type="object",
- *         @OA\Property(property="S", type="object",
- *             @OA\Property(property="длина", type="integer", example=60),
- *             @OA\Property(property="обхват_груди", type="integer", example=90)
- *         )
- *     ),
- *     @OA\Property(property="measurements", type="object",
- *         @OA\Property(property="S", type="object",
- *             @OA\Property(property="длина", type="integer", example=60),
- *             @OA\Property(property="обхват_груди", type="integer", example=90)
- *         )
- *     ),
- *     @OA\Property(property="created_at", type="string", format="date-time", example="2024-02-06T12:34:56Z"),
- *     @OA\Property(property="updated_at", type="string", format="date-time", example="2024-02-06T12:34:56Z")
+ *     required={"id_product", "id_product_1c", "title", "article", "description", "unit", "image_urls", "price", "weight", "length", "width", "height", "ready"},
+ *     @OA\Property(property="id_product", type="integer", example=1, description="Уникальный идентификатор товара на сайте"),
+ *     @OA\Property(property="id_product_1c", type="string", example="1c-001", description="Уникальный идентификатор товара в 1С"),
+ *     @OA\Property(property="title", type="string", example="Футболка", description="Наименование товара"),
+ *     @OA\Property(property="article", type="string", example="ABC123", description="Артикул товара"),
+ *     @OA\Property(property="description", type="string", example="Полное описание товара", description="Описание товара"),
+ *     @OA\Property(property="unit", type="string", example="шт", description="Единица измерения"),
+ *     @OA\Property(property="image_urls", type="array", @OA\Items(type="string", example="https://example.com/image.jpg"), description="Ссылки на изображения"),
+ *     @OA\Property(property="price", type="number", format="float", example=199.99, description="Цена продажи"),
+ *     @OA\Property(property="weight", type="number", format="float", example=0.5, description="Вес в килограммах"),
+ *     @OA\Property(property="length", type="number", format="float", example=30, description="Длина в сантиметрах"),
+ *     @OA\Property(property="width", type="number", format="float", example=20, description="Ширина в сантиметрах"),
+ *     @OA\Property(property="height", type="number", format="float", example=10, description="Высота в сантиметрах"),
+ *     @OA\Property(property="ready", type="boolean", example=true, description="Флаг выгрузки/изменения карты товара в 1С")
  * )
  */
 

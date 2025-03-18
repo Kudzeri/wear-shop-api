@@ -41,6 +41,48 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * )
  */
 
+/**
+ * @OA\Schema(
+ *     schema="Order",
+ *     type="object",
+ *     title="Order",
+ *     required={"id_order", "date_order", "order_amount"},
+ *     @OA\Property(
+ *         property="id_order",
+ *         type="integer",
+ *         example=1,
+ *         description="Уникальный идентификатор заказа на сайте"
+ *     ),
+ *     @OA\Property(
+ *         property="date_order",
+ *         type="string",
+ *         format="date-time",
+ *         example="2023-10-01 12:30:00",
+ *         description="Дата создания заказа"
+ *     ),
+ *     @OA\Property(
+ *         property="number_order_1c",
+ *         type="string",
+ *         example="1001",
+ *         description="Номер заказа в 1С"
+ *     ),
+ *     @OA\Property(
+ *         property="date_order_1c",
+ *         type="string",
+ *         format="date-time",
+ *         example="2023-10-01 12:30:00",
+ *         description="Дата заказа в 1С"
+ *     ),
+ *     @OA\Property(
+ *         property="order_amount",
+ *         type="number",
+ *         format="float",
+ *         example=250.75,
+ *         description="Сумма заказа"
+ *     )
+ * )
+ */
+
 class Order extends Model
 {
     use HasFactory;
