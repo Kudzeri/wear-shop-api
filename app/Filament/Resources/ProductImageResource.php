@@ -26,22 +26,9 @@ class ProductImageResource extends Resource
                 \Filament\Forms\Components\Select::make('product_id')
                     ->relationship('product', 'name')
                     ->searchable(),
-                \Filament\Forms\Components\Radio::make('upload_type')
-                    ->options([
-                        'file' => 'Upload File',
-                        'link' => 'Image URL',
-                    ])
-                    ->default('file')
-                    ->reactive(),
-                \Filament\Forms\Components\FileUpload::make('image_path')
-                    ->disk('public')
-                    ->directory('product_images')
-                    ->image()
-                    ->visible(fn ($get) => $get('upload_type') === 'file'),
-                \Filament\Forms\Components\TextInput::make('image_url')
+                \Filament\Forms\Components\TextInput::make('image_path')
                     ->label('Image URL')
-                    ->url()
-                    ->visible(fn ($get) => $get('upload_type') === 'link'),
+                    ->url(),
             ]);
     }
 
