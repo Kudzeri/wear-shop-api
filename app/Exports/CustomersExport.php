@@ -2,26 +2,29 @@
 
 namespace App\Exports;
 
-use App\Models\Customer;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Models\User;
 
-class CustomersExport implements FromCollection
+class CustomersExport
 {
     protected $filters;
 
-    public function __construct(array $filters = [])
+    public function __construct($filters = [])
     {
         $this->filters = $filters;
     }
-    
-    public function collection(): Collection
+
+    public function getData(): array
     {
-        $query = Customer::query();
-        // Применяем фильтры, если заданы
-        foreach ($this->filters as $key => $value) {
-            $query->where($key, $value);
-        }
-        return $query->get(['id_customer', 'id_customer_1c', 'name', 'surname', 'email', 'phone']);
+        $customers = User::query()
+            ->when(isset($this->filters['id_customer']), function($query) {
+                $query->where('id', $this->filters['id_customer']);
+            })
+            ->get(['id', 'name', 'email']);
+        return $customers->toArray();
+    }
+
+    public function getHeadings(): array
+    {
+        return ['ID', 'Name', 'Email'];
     }
 }

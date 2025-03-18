@@ -3,24 +3,18 @@
 namespace App\Exports;
 
 use App\Models\Product;
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
 
-class ProductsExport implements FromCollection
+class ProductsExport
 {
-    protected $filters;
 
-    public function __construct(array $filters = [])
+    public function getData(): array
     {
-        $this->filters = $filters;
+        $products = Product::select('id', 'name', 'price', 'stock')->get();
+        return $products->toArray();
     }
-    
-    public function collection(): Collection
+
+    public function getHeadings(): array
     {
-        $query = Product::query();
-        foreach ($this->filters as $key => $value) {
-            $query->where($key, $value);
-        }
-        return $query->get(['id_product', 'id_product_1c', 'title', 'article', 'unit', 'price', 'weight', 'length', 'width', 'height', 'ready']);
+        return ['ID', 'Название', 'Цена', 'Остаток'];
     }
 }

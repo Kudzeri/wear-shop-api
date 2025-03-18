@@ -2,122 +2,117 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CustomersExport;
+use App\Exports\ExportContract;
+use App\Exports\OrderExport;
 use App\Exports\ProductsExport;
 use App\Exports\PromoExport;
-use App\Exports\OrderExport;
+use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-/**
- * @OA\Info(
- *     title="1C Export API",
- *     version="1.0.0",
- *     description="API для формирования отчетов для 1С"
- * )
- */
-
-/**
- * @OA\Tag(
- *     name="Reports",
- *     description="Endpoints для экспорта отчетов"
- * )
- */
 class Report1CController extends Controller
 {
-    /**
-     * @OA\Get(
-     *     path="/report/customers",
-     *     summary="Экспорт отчета покупателей",
-     *     tags={"Reports"},
-     *     @OA\Parameter(
-     *         name="id_customer",
-     *         in="query",
-     *         description="Фильтр по ID покупателя",
-     *         required=false,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Отчет покупателей в формате xlsx"
-     *     )
-     * )
-     */
-    public function exportCustomers(Request $request)
+    // Общий метод для экспорта с использованием PhpSpreadsheet
+    protected function downloadExport($exportObject, string $filename): BinaryFileResponse
     {
-        $filters = $request->all();
-        return Excel::download(new CustomersExport($filters), 'customers.xlsx');
+        $data = $exportObject->getData();
+        $headings = $exportObject->getHeadings();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Записываем заголовки в первую строку
+        $col = 'A';
+        foreach ($headings as $heading) {
+            $sheet->setCellValue($col . '1', $heading);
+            $col++;
+        }
+
+        // Записываем данные начиная со второй строки
+        $rowIndex = 2;
+        foreach ($data as $row) {
+            $col = 'A';
+            foreach ($row as $cell) {
+                $sheet->setCellValue($col . $rowIndex, $cell);
+                $col++;
+            }
+            $rowIndex++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $tempFile = tempnam(sys_get_temp_dir(), 'export_');
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
     }
 
     /**
      * @OA\Get(
-     *     path="/report/products",
-     *     summary="Экспорт отчета товаров",
+     *     path="/api/reports/customers",
+     *     summary="Экспорт клиентов",
      *     tags={"Reports"},
-     *     @OA\Parameter(
-     *         name="id_product",
-     *         in="query",
-     *         description="Фильтр по ID товара",
-     *         required=false,
-     *         @OA\Schema(type="integer")
-     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Отчет товаров в формате xlsx"
+     *         description="Файл экспорта клиентов"
      *     )
      * )
      */
-    public function exportProducts(Request $request)
+    public function exportCustomers(): BinaryFileResponse
     {
-        $filters = $request->all();
-        return Excel::download(new ProductsExport($filters), 'products.xlsx');
+        $export = new CustomersExport();
+        return $this->downloadExport($export, 'customers.xlsx');
     }
 
     /**
      * @OA\Get(
-     *     path="/report/promos",
-     *     summary="Экспорт отчета промокодов",
+     *     path="/api/reports/orders",
+     *     summary="Экспорт заказов",
      *     tags={"Reports"},
-     *     @OA\Parameter(
-     *         name="id_promo",
-     *         in="query",
-     *         description="Фильтр по ID промокода",
-     *         required=false,
-     *         @OA\Schema(type="integer")
-     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Отчет промокодов в формате xlsx"
+     *         description="Файл экспорта заказов"
      *     )
      * )
      */
-    public function exportPromos(Request $request)
+    public function exportOrders(): BinaryFileResponse
     {
-        $filters = $request->all();
-        return Excel::download(new PromoExport($filters), 'promos.xlsx');
+        $export = new OrderExport();
+        return $this->downloadExport($export, 'orders.xlsx');
     }
 
     /**
      * @OA\Get(
-     *     path="/report/orders",
-     *     summary="Экспорт отчета заказов покупателей",
+     *     path="/api/reports/products",
+     *     summary="Экспорт продуктов",
      *     tags={"Reports"},
-     *     @OA\Parameter(
-     *         name="id_order",
-     *         in="query",
-     *         description="Фильтр по ID заказа",
-     *         required=false,
-     *         @OA\Schema(type="integer")
-     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Отчет заказов в формате xlsx"
+     *         description="Файл экспорта продуктов"
      *     )
      * )
      */
-    public function exportOrders(Request $request)
+    public function exportProducts(): BinaryFileResponse
     {
-        $filters = $request->all();
-        return Excel::download(new OrderExport($filters), 'orders.xlsx');
+        $export = new ProductsExport();
+        return $this->downloadExport($export, 'products.xlsx');
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/reports/promos",
+     *     summary="Экспорт промо-кодов",
+     *     tags={"Reports"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Файл экспорта промо-кодов"
+     *     )
+     * )
+     */
+    public function exportPromos(): BinaryFileResponse
+    {
+        $export = new PromoExport();
+        return $this->downloadExport($export, 'promos.xlsx');
     }
 }
