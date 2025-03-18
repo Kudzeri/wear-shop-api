@@ -53,13 +53,14 @@ class ProductResource extends Resource
                     ->reorderable()
                     ->moveFiles()
                     ->preserveFilenames()
-                    ->dehydratedStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Изменено
+                    ->dehydrateStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Исправлено
                     ->afterStateUpdated(function ($state, $record) {
                         if ($record) {
-                            $record->syncImagesAdm($state); // Синхронизация изображений
+                            $record->syncImagesAdm($state);
                         }
                     })
                     ->dehydrated(fn ($state) => filled($state)),
+
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
                     ->disk('public')
