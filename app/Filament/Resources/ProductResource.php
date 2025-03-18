@@ -52,7 +52,8 @@ class ProductResource extends Resource
                     ->directory('products')
                     ->reorderable()
                     ->moveFiles()
-                    ->preserveFilenames(),
+                    ->preserveFilenames()
+                    ->dehydrated(false),
 
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')

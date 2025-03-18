@@ -40,8 +40,8 @@ class Product extends Model
         'name',
         'category_id',
         'description',
-        'images',      // добавить поле для изображений
-        'video_file',  // если нужно сохранять видео
+        // 'images', // removed since images are handled via relationship
+        'video_file',
         'composition_care',
         'preference',
         'measurements',
