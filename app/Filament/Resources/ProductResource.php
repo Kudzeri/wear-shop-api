@@ -20,7 +20,6 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\Repeater;
 
 class ProductResource extends Resource
 {
@@ -46,21 +45,6 @@ class ProductResource extends Resource
             Textarea::make('description')
                 ->label('Описание товара')
                 ->required(),
-
-            Repeater::make('images')
-                ->label('Изображения')
-                ->relationship('images') // явно указана связь
-                ->schema([
-                    FileUpload::make('image_path')
-                        ->label('Изображение')
-                        ->image()
-                        ->disk('public')
-                        ->directory('products')
-                        ->required()
-                        ->preserveFilenames(),
-                ])
-                ->maxItems(5)
-                ->reorderable(),
 
             FileUpload::make('video_file')
                 ->label('Загрузить видео (10мб)')
