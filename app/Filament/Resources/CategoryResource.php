@@ -47,8 +47,7 @@ class CategoryResource extends Resource
                     ->directory('categories')
                     ->previewable()
                     ->reorderable()
-                    ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName())
-                    ->dehydrated(false)
+                    ->getUploadedFileNameForStorageUsing(fn($file) => 'categories/' . $file->hashName())
                     ->nullable(),
 
                 Toggle::make('is_sale')

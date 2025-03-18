@@ -20,7 +20,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Stories extends Model
 {
-    protected $fillable = ['image_url', 'title'];
+    protected $fillable = [
+        'title',
+        'image_url',  // добавить это поле
+    ];
 
     public function products(): BelongsToMany
     {

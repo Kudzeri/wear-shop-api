@@ -39,8 +39,9 @@ class Product extends Model
     protected $fillable = [
         'name',
         'category_id',
-        'video_url',
         'description',
+        'images',      // добавить поле для изображений
+        'video_file',  // если нужно сохранять видео
         'composition_care',
         'preference',
         'measurements',
