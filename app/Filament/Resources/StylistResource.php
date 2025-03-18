@@ -11,7 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Resources\Resource;
+use Filament\Resources\Resource;//stylist resource
 
 class StylistResource extends Resource
 {
