@@ -48,7 +48,9 @@ class ProductResource extends Resource
 
                 FileUpload::make('images')
                     ->label('Изображения')
+                    ->image()
                     ->multiple()
+                    ->maxFiles(5)
                     ->disk('public')
                     ->directory('products')
                     ->reorderable()
@@ -58,7 +60,6 @@ class ProductResource extends Resource
                 FileUpload::make('video_file')
                     ->label('Загрузить видео (10мб)')
                     ->disk('public')
-                    ->image()
                     ->directory('products/videos')
                     ->acceptedFileTypes(['video/mp4', 'video/mov', 'video/avi'])
                     ->maxSize(10240) // 10MB

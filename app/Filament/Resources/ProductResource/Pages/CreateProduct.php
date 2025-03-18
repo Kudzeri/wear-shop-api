@@ -10,11 +10,12 @@ class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    // Обновлённая логика создания товара
     protected function handleRecordCreation(array $data): Product
     {
         $record = Product::create($data);
         if (isset($data['images'])) {
-            $record->syncImagesAdm($data['images']);
+            $record->syncImages($data['images']);
         }
         return $record;
     }

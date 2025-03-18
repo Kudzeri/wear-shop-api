@@ -82,14 +82,16 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
+    // Обновлённый метод синхронизации изображений
     public function syncImages(array $imagePaths): void
     {
-        $this->images()->delete(); // Удаляем старые изображения
+        $this->images()->delete(); // удаляем старые изображения
         foreach ($imagePaths as $path) {
             $this->images()->create(['image_path' => $path]);
         }
     }
 
+    // Если метод syncImagesAdm использовался ранее, его можно удалить или оставить для обратной совместимости
     public function syncImagesAdm(?array $imagePaths): void
     {
         if ($imagePaths === null) {
