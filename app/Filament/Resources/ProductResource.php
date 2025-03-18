@@ -97,11 +97,7 @@ class ProductResource extends Resource
                     ->prefix('руб.')
                     ->minValue(0),
 
-            ])->afterSave(function ($record, $data) {
-                if (isset($data['images'])) {
-                    $record->syncImagesAdm($data['images']);
-                }
-            });
+            ]);
     }
 
     public static function table(Table $table): Table
