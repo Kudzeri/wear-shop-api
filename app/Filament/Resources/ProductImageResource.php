@@ -38,7 +38,7 @@ class ProductImageResource extends Resource
                     ->directory('product_images')
                     ->image()
                     ->visible(fn ($get) => $get('upload_type') === 'file'),
-                \Filament\Forms\Components\TextInput::make('image_path')
+                \Filament\Forms\Components\TextInput::make('image_url')
                     ->label('Image URL')
                     ->url()
                     ->visible(fn ($get) => $get('upload_type') === 'link'),
