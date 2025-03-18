@@ -9,7 +9,7 @@ namespace App\Http\Controllers;
  *     description="API сайта"
  * )
  *
- * @OA\Server(url="http://127.0.0.1:8000")
+ * @OA\Server(url="https://siveno.shop")
  *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",

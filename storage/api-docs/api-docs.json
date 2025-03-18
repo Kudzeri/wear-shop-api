@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8000"
+            "url": "https://siveno.shop"
         }
     ],
     "paths": {
@@ -1331,13 +1331,13 @@
                 }
             }
         },
-        "/delivery-services": {
+        "api/delivery-services": {
             "get": {
                 "tags": [
                     "DeliveryService"
                 ],
                 "summary": "Получить список служб доставки",
-                "operationId": "aec79c3e28a08541fd74c87786ceb135",
+                "operationId": "2e3830aab3bf7b2a18dbf53a5ecb700f",
                 "responses": {
                     "200": {
                         "description": "Список служб доставки"
@@ -1349,7 +1349,7 @@
                     "DeliveryService"
                 ],
                 "summary": "Создать службу доставки",
-                "operationId": "0bfe85c221fba569118f35fbdf868c05",
+                "operationId": "0abaf227a304c9ac62bd34a68b646e39",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1367,13 +1367,13 @@
                 }
             }
         },
-        "/delivery-services/create": {
+        "api/delivery-services/create": {
             "get": {
                 "tags": [
                     "DeliveryService"
                 ],
                 "summary": "Форма создания службы доставки",
-                "operationId": "0edcdcc2ccc8655f329af175f206ecaa",
+                "operationId": "8a373770385c98c4df3015a44fa71771",
                 "responses": {
                     "200": {
                         "description": "Форма создания"
@@ -1381,13 +1381,13 @@
                 }
             }
         },
-        "/delivery-services/{deliveryService}/edit": {
+        "api/delivery-services/{deliveryService}/edit": {
             "get": {
                 "tags": [
                     "DeliveryService"
                 ],
                 "summary": "Редактировать службу доставки",
-                "operationId": "36badca1c9903fb0bf5ef64322b9da46",
+                "operationId": "ce65456fabd85c46e353e7944118072a",
                 "parameters": [
                     {
                         "name": "deliveryService",
@@ -1405,13 +1405,13 @@
                 }
             }
         },
-        "/delivery-services/{deliveryService}": {
+        "api/delivery-services/{deliveryService}": {
             "put": {
                 "tags": [
                     "DeliveryService"
                 ],
                 "summary": "Обновить службу доставки",
-                "operationId": "8a7a812f1090d38c53094cfc1f894d23",
+                "operationId": "98ff13913a73113d0785c180489f2127",
                 "parameters": [
                     {
                         "name": "deliveryService",
@@ -1443,7 +1443,7 @@
                     "DeliveryService"
                 ],
                 "summary": "Удалить службу доставки",
-                "operationId": "ec13e38554e8f502318bc3c6201d8d4a",
+                "operationId": "4fad95847f8ac33f67335182759d63f1",
                 "parameters": [
                     {
                         "name": "deliveryService",
@@ -2616,13 +2616,13 @@
                 ]
             }
         },
-        "/pick-up-points": {
+        "api/pick-up-points": {
             "get": {
                 "tags": [
                     "PickUpPoint"
                 ],
                 "summary": "Получить список ПВЗ",
-                "operationId": "f644a4871e056589b555691614d8db4d",
+                "operationId": "47b453f427f9e0efca5158402f5c1abf",
                 "responses": {
                     "200": {
                         "description": "Список пунктов выдачи"
@@ -2634,7 +2634,7 @@
                     "PickUpPoint"
                 ],
                 "summary": "Создать ПВЗ",
-                "operationId": "4edd2177aeecfe49b0a613135a1f111c",
+                "operationId": "250c7d0970ae541f57b382c995b7528e",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -2652,13 +2652,13 @@
                 }
             }
         },
-        "/pick-up-points/create": {
+        "api/pick-up-points/create": {
             "get": {
                 "tags": [
                     "PickUpPoint"
                 ],
                 "summary": "Форма создания ПВЗ",
-                "operationId": "8b221397085d5e35b7ef5d521c320421",
+                "operationId": "da17d0831a273da959f508842bdb2590",
                 "responses": {
                     "200": {
                         "description": "Форма создания"
@@ -2666,13 +2666,13 @@
                 }
             }
         },
-        "/pick-up-points/{pickUpPoint}/edit": {
+        "api/pick-up-points/{pickUpPoint}/edit": {
             "get": {
                 "tags": [
                     "PickUpPoint"
                 ],
                 "summary": "Редактировать ПВЗ",
-                "operationId": "24b7fc79218d667c71e09dfea471b706",
+                "operationId": "15a394e59c92678178c494dbf7a308bc",
                 "parameters": [
                     {
                         "name": "pickUpPoint",
@@ -2690,13 +2690,13 @@
                 }
             }
         },
-        "/pick-up-points/{pickUpPoint}": {
+        "api/pick-up-points/{pickUpPoint}": {
             "put": {
                 "tags": [
                     "PickUpPoint"
                 ],
                 "summary": "Обновить ПВЗ",
-                "operationId": "965132a8aac9cd278c874a44db078da1",
+                "operationId": "83e0935b913dfd95afcc0720faaa8941",
                 "parameters": [
                     {
                         "name": "pickUpPoint",
@@ -2728,7 +2728,7 @@
                     "PickUpPoint"
                 ],
                 "summary": "Удалить ПВЗ",
-                "operationId": "69dc428613a2dcc2d3f451e1f4f1f1db",
+                "operationId": "46f4c11420e16351bfe47754b85a90a0",
                 "parameters": [
                     {
                         "name": "pickUpPoint",
