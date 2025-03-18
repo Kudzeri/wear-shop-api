@@ -40,7 +40,7 @@ class Product extends Model
         'name',
         'category_id',
         'description',
-        // 'images', // removed since images are handled via relationship
+        'images',
         'video_file',
         'composition_care',
         'preference',
