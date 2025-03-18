@@ -36,7 +36,7 @@ class StoriesResource extends Resource
                 FileUpload::make('image_url')
                     ->image()
                     ->label('Изображение')
-                    ->getUploadedFileUrlUsing(fn(string $filePath): ?string => "https://siveno.shop/" . $filePath) // Добавлено
+                    ->dehydratedStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Изменено
                     ->required(),
 
                 Select::make('products')

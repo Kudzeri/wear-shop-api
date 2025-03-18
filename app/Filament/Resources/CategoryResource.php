@@ -48,7 +48,7 @@ class CategoryResource extends Resource
                     ->previewable()
                     ->reorderable()
                     ->getUploadedFileNameForStorageUsing(fn ($file) => 'categories/' . $file->hashName())
-                    ->getUploadedFileUrlUsing(fn(string $filePath): ?string => "https://siveno.shop/" . $filePath) // Добавлено
+                    ->dehydratedStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Изменено
                     ->dehydrated(false)
                     ->nullable(),
 

@@ -53,7 +53,7 @@ class ProductResource extends Resource
                     ->reorderable()
                     ->moveFiles()
                     ->preserveFilenames()
-                    ->getUploadedFileUrlUsing(fn(string $filePath): ?string => "https://siveno.shop/" . $filePath) // Добавлено
+                    ->dehydratedStateUsing(fn ($state) => $state ? "https://siveno.shop/" . $state : $state) // Изменено
                     ->afterStateUpdated(function ($state, $record) {
                         if ($record) {
                             $record->syncImagesAdm($state); // Синхронизация изображений
