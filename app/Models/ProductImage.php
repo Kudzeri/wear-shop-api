@@ -12,6 +12,10 @@ class ProductImage extends Model
 
     protected $fillable = ['product_id', 'image_path'];
 
+    public function getImagePathAttribute($value) {
+        return 'https://siveno.shop/storage/' . $value;
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
