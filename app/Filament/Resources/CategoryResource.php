@@ -41,10 +41,10 @@ class CategoryResource extends Resource
                     ->nullable()
                     ->searchable(),
 
-                TextInput::make('image')
-                    ->label('Изображение (ссылка)')
+                FileUpload::make('image')
+                    ->label('Изображение')
                     ->nullable()
-                    ->rules('url'),
+                    ->image(),
 
                 Toggle::make('is_sale')
                     ->label('Распродажа')

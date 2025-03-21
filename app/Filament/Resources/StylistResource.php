@@ -25,10 +25,10 @@ class StylistResource extends Resource
                 TextInput::make('title')
                         ->label('Заголовок')
                         ->required(),
-                TextInput::make('image_url')
-                    ->label('Фото выбора стилиста (ссылка)')
+                FileUpload::make('image_url')
+                    ->label('Фото стилиста')
                     ->required()
-                    ->rules('url'),
+                    ->image(),
 
                 Select::make('products')
                     ->label('Товары')

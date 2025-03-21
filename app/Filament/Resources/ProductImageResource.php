@@ -26,9 +26,9 @@ class ProductImageResource extends Resource
                 \Filament\Forms\Components\Select::make('product_id')
                     ->relationship('product', 'name')
                     ->searchable(),
-                \Filament\Forms\Components\TextInput::make('image_path')
-                    ->label('Image URL')
-                    ->url(),
+                \Filament\Forms\Components\FileUpload::make('image_path')
+                    ->label('Image')
+                    ->image(),
             ]);
     }
 
