@@ -150,4 +150,9 @@ class Product extends Model
     {
         return $this->belongsToMany(Stylist::class, 'stylist_products');
     }
+
+    public function getImagePathAttribute($value) {
+        // Если значение может быть пустым, можно добавить проверку
+        return 'https://siveno.shop/storage/' . $value;
+    }
 }
