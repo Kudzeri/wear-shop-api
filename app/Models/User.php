@@ -75,6 +75,10 @@ class User extends Authenticatable
         return $this->hasMany(Wishlist::class);
     }
 
+    public function getAvatarUrlAttribute($value) {
+        return 'https://siveno.shop/storage/' . $value;
+    }
+
     public function wishlistProducts(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'wishlists');

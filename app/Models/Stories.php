@@ -25,6 +25,10 @@ class Stories extends Model
         'image_url',  // добавить это поле
     ];
 
+    public function getImageUrlAttribute($value) {
+        return 'https://siveno.shop/storage/' . $value;
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'stories_products');

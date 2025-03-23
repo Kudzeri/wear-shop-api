@@ -22,6 +22,10 @@ class Stylist extends Model
         // ...other fields...
     ];
 
+    public function getImageUrlAttribute($value) {
+        return 'https://siveno.shop/storage/' . $value;
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'stylist_products');
