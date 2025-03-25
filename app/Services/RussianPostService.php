@@ -10,22 +10,20 @@ class RussianPostService
 {
     protected Client $client;
     protected string $baseUrl;
-    protected string $username;
-    protected string $password;
+    protected $apiKey;
 
     public function __construct()
     {
         // Эти параметры рекомендуется вынести в конфигурацию (.env)
         $this->baseUrl  = config('services.russian_post.base_url', 'https://otpravka-api.pochta.ru/');
-        $this->username = config('services.russian_post.username');
-        $this->password = config('services.russian_post.password');
+        $this->apiKey   = env('RUSSIAN_POST_API_KEY');
 
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
-            'auth'     => [$this->username, $this->password],
             'headers'  => [
-                'Content-Type' => 'application/json',
-                'Accept'       => 'application/json',
+                'Content-Type'  => 'application/json',
+                'Accept'        => 'application/json',
+                'Authorization' => 'Bearer ' . $this->apiKey,
             ],
             'timeout' => 10,
         ]);
@@ -134,5 +132,13 @@ class RussianPostService
             Log::error('Ошибка отслеживания отправления через Почту России', ['error' => $e->getMessage()]);
             return null;
         }
+    }
+
+    // Новый метод для обращения к API Почты России
+    public function getData()
+    {
+        // Замените 'some-endpoint' на нужный endpoint API
+        $response = $this->client->get('some-endpoint');
+        return json_decode($response->getBody(), true);
     }
 }

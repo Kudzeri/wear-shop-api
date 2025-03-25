@@ -209,4 +209,11 @@ class RussianPostController extends Controller
         }
         return response()->json($result);
     }
+
+    // Новый метод, вызывающий сервис для получения данных
+    public function fetchData(Request $request)
+    {
+        $data = $this->russianPostService->getData();
+        return response()->json($data);
+    }
 }
