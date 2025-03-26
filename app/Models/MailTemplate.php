@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class MailTemplate extends Model
 {
-    protected $fillable = ['subject', 'content'];
+    protected $fillable = ['subject', 'content', 'title'];
 }
