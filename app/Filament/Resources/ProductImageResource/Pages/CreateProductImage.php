@@ -11,6 +11,12 @@ class CreateProductImage extends CreateRecord
 {
     protected static string $resource = ProductImageResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
+
+
     protected function handleRecordCreation(array $data): ProductImage
     {
         foreach ($data['images'] as $imagePath) {
