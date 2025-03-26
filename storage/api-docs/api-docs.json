@@ -1716,6 +1716,12 @@
                                             "yookassa"
                                         ],
                                         "example": "yookassa"
+                                    },
+                                    "promo_code": {
+                                        "description": "Опциональный промокод для скидки",
+                                        "type": "string",
+                                        "example": "SALE2023",
+                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1875,17 +1881,7 @@
                 "operationId": "2cd7e03021e72d9d799c12dfe179c865",
                 "responses": {
                     "200": {
-                        "description": "Список заказов",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Order"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Список заказов"
                     },
                     "401": {
                         "description": "Не авторизован"
@@ -1904,7 +1900,7 @@
                     "Orders"
                 ],
                 "summary": "Получение конкретного заказа",
-                "description": "Возвращает информацию о заказе пользователя.",
+                "description": "Возвращает информацию о заказе пользователя с товарами и адресом.",
                 "operationId": "c29621029e70f65247909d3e09031118",
                 "parameters": [
                     {
@@ -1923,7 +1919,148 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Order"
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "user_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "address_id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "total_price": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 2500.75
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "pending"
+                                        },
+                                        "delivery": {
+                                            "type": "string",
+                                            "example": "express"
+                                        },
+                                        "payment_id": {
+                                            "type": "integer",
+                                            "example": 45,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_id": {
+                                            "type": "integer",
+                                            "example": 3,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_1c": {
+                                            "type": "string",
+                                            "example": "CDEK-1C-XX",
+                                            "nullable": true
+                                        },
+                                        "pickup_point_id": {
+                                            "type": "integer",
+                                            "example": 5,
+                                            "nullable": true
+                                        },
+                                        "pickup_point_1c": {
+                                            "type": "string",
+                                            "example": "PP-1C-001",
+                                            "nullable": true
+                                        },
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "product_id": {
+                                                        "type": "integer",
+                                                        "example": 101
+                                                    },
+                                                    "size_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 999.99
+                                                    },
+                                                    "product": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 101
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Кроссовки Adidas"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "size": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "42"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "address": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "example": "Алматинская область"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "Алматы"
+                                                },
+                                                "street": {
+                                                    "type": "string",
+                                                    "example": "Абая"
+                                                },
+                                                "house": {
+                                                    "type": "string",
+                                                    "example": "12"
+                                                },
+                                                "apartment": {
+                                                    "type": "string",
+                                                    "example": "45",
+                                                    "nullable": true
+                                                },
+                                                "postal_code": {
+                                                    "type": "string",
+                                                    "example": "050000"
+                                                },
+                                                "full_address": {
+                                                    "type": "string",
+                                                    "example": "Алматы, ул. Абая, д. 12, кв. 45"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2193,7 +2330,148 @@
                                 "schema": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/components/schemas/Order"
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 123
+                                            },
+                                            "user_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "address_id": {
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "total_price": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 2500.75
+                                            },
+                                            "status": {
+                                                "type": "string",
+                                                "example": "pending"
+                                            },
+                                            "delivery": {
+                                                "type": "string",
+                                                "example": "express"
+                                            },
+                                            "payment_id": {
+                                                "type": "integer",
+                                                "example": 45,
+                                                "nullable": true
+                                            },
+                                            "delivery_service_id": {
+                                                "type": "integer",
+                                                "example": 3,
+                                                "nullable": true
+                                            },
+                                            "delivery_service_1c": {
+                                                "type": "string",
+                                                "example": "CDEK-1C-XX",
+                                                "nullable": true
+                                            },
+                                            "pickup_point_id": {
+                                                "type": "integer",
+                                                "example": 5,
+                                                "nullable": true
+                                            },
+                                            "pickup_point_1c": {
+                                                "type": "string",
+                                                "example": "PP-1C-001",
+                                                "nullable": true
+                                            },
+                                            "items": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "product_id": {
+                                                            "type": "integer",
+                                                            "example": 101
+                                                        },
+                                                        "size_id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "quantity": {
+                                                            "type": "integer",
+                                                            "example": 3
+                                                        },
+                                                        "price": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 999.99
+                                                        },
+                                                        "product": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 101
+                                                                },
+                                                                "name": {
+                                                                    "type": "string",
+                                                                    "example": "Кроссовки Adidas"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        },
+                                                        "size": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 2
+                                                                },
+                                                                "label": {
+                                                                    "type": "string",
+                                                                    "example": "42"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "address": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    },
+                                                    "state": {
+                                                        "type": "string",
+                                                        "example": "Алматинская область"
+                                                    },
+                                                    "city": {
+                                                        "type": "string",
+                                                        "example": "Алматы"
+                                                    },
+                                                    "street": {
+                                                        "type": "string",
+                                                        "example": "Абая"
+                                                    },
+                                                    "house": {
+                                                        "type": "string",
+                                                        "example": "12"
+                                                    },
+                                                    "apartment": {
+                                                        "type": "string",
+                                                        "example": "45",
+                                                        "nullable": true
+                                                    },
+                                                    "postal_code": {
+                                                        "type": "string",
+                                                        "example": "050000"
+                                                    },
+                                                    "full_address": {
+                                                        "type": "string",
+                                                        "example": "Алматы, ул. Абая, д. 12, кв. 45"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 }
                             }
@@ -2222,6 +2500,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "ID заказа",
                         "required": true,
                         "schema": {
                             "type": "integer"
@@ -2234,7 +2513,148 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Order"
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "user_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "address_id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "total_price": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 2500.75
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "pending"
+                                        },
+                                        "delivery": {
+                                            "type": "string",
+                                            "example": "express"
+                                        },
+                                        "payment_id": {
+                                            "type": "integer",
+                                            "example": 45,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_id": {
+                                            "type": "integer",
+                                            "example": 3,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_1c": {
+                                            "type": "string",
+                                            "example": "CDEK-1C-XX",
+                                            "nullable": true
+                                        },
+                                        "pickup_point_id": {
+                                            "type": "integer",
+                                            "example": 5,
+                                            "nullable": true
+                                        },
+                                        "pickup_point_1c": {
+                                            "type": "string",
+                                            "example": "PP-1C-001",
+                                            "nullable": true
+                                        },
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "product_id": {
+                                                        "type": "integer",
+                                                        "example": 101
+                                                    },
+                                                    "size_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 999.99
+                                                    },
+                                                    "product": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 101
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Кроссовки Adidas"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "size": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "42"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "address": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "example": "Алматинская область"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "Алматы"
+                                                },
+                                                "street": {
+                                                    "type": "string",
+                                                    "example": "Абая"
+                                                },
+                                                "house": {
+                                                    "type": "string",
+                                                    "example": "12"
+                                                },
+                                                "apartment": {
+                                                    "type": "string",
+                                                    "example": "45",
+                                                    "nullable": true
+                                                },
+                                                "postal_code": {
+                                                    "type": "string",
+                                                    "example": "050000"
+                                                },
+                                                "full_address": {
+                                                    "type": "string",
+                                                    "example": "Алматы, ул. Абая, д. 12, кв. 45"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -2286,18 +2706,26 @@
                                     "items": {
                                         "type": "array",
                                         "items": {
+                                            "required": [
+                                                "product_id",
+                                                "size_id",
+                                                "quantity"
+                                            ],
                                             "properties": {
                                                 "product_id": {
                                                     "description": "ID продукта",
-                                                    "type": "integer"
+                                                    "type": "integer",
+                                                    "example": 101
                                                 },
                                                 "size_id": {
-                                                    "description": "ID размера продукта",
-                                                    "type": "integer"
+                                                    "description": "ID размера",
+                                                    "type": "integer",
+                                                    "example": 2
                                                 },
                                                 "quantity": {
-                                                    "description": "Количество товара",
-                                                    "type": "integer"
+                                                    "description": "Количество",
+                                                    "type": "integer",
+                                                    "example": 3
                                                 }
                                             },
                                             "type": "object"
@@ -2315,7 +2743,148 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Order"
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 123
+                                        },
+                                        "user_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "address_id": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "total_price": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 2500.75
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "pending"
+                                        },
+                                        "delivery": {
+                                            "type": "string",
+                                            "example": "express"
+                                        },
+                                        "payment_id": {
+                                            "type": "integer",
+                                            "example": 45,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_id": {
+                                            "type": "integer",
+                                            "example": 3,
+                                            "nullable": true
+                                        },
+                                        "delivery_service_1c": {
+                                            "type": "string",
+                                            "example": "CDEK-1C-XX",
+                                            "nullable": true
+                                        },
+                                        "pickup_point_id": {
+                                            "type": "integer",
+                                            "example": 5,
+                                            "nullable": true
+                                        },
+                                        "pickup_point_1c": {
+                                            "type": "string",
+                                            "example": "PP-1C-001",
+                                            "nullable": true
+                                        },
+                                        "items": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "product_id": {
+                                                        "type": "integer",
+                                                        "example": 101
+                                                    },
+                                                    "size_id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "quantity": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 999.99
+                                                    },
+                                                    "product": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 101
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Кроссовки Adidas"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "size": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "label": {
+                                                                "type": "string",
+                                                                "example": "42"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "address": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "state": {
+                                                    "type": "string",
+                                                    "example": "Алматинская область"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "Алматы"
+                                                },
+                                                "street": {
+                                                    "type": "string",
+                                                    "example": "Абая"
+                                                },
+                                                "house": {
+                                                    "type": "string",
+                                                    "example": "12"
+                                                },
+                                                "apartment": {
+                                                    "type": "string",
+                                                    "example": "45",
+                                                    "nullable": true
+                                                },
+                                                "postal_code": {
+                                                    "type": "string",
+                                                    "example": "050000"
+                                                },
+                                                "full_address": {
+                                                    "type": "string",
+                                                    "example": "Алматы, ул. Абая, д. 12, кв. 45"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -3153,6 +3722,61 @@
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/promos": {
+            "get": {
+                "tags": [
+                    "Promo"
+                ],
+                "summary": "Список всех промокодов",
+                "operationId": "dc5cb1e572eb264cd48b04b155532081",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Promo"
+                ],
+                "summary": "Создание промокода",
+                "operationId": "646df59a103ade4a6de44e73a1c5ce64",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code",
+                                    "discount"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "NEW10"
+                                    },
+                                    "discount": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "expires_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-12-31"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     }
                 }
             }
@@ -4304,6 +4928,78 @@
                 }
             }
         },
+        "/api/subscribe": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Подписка на рассылку",
+                "description": "Создает нового подписчика и отправляет промо-код на email.",
+                "operationId": "1ec37d1690db1e9a3d77bd7861b4d2ef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "name"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Иван Иванов"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешная подписка",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Вы успешно подписались на рассылку!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The email field is required."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -4767,59 +5463,6 @@
     },
     "components": {
         "schemas": {
-            "Address": {
-                "title": "Адрес",
-                "description": "Модель адреса пользователя",
-                "required": [
-                    "id",
-                    "state",
-                    "city",
-                    "street",
-                    "house",
-                    "postal_code"
-                ],
-                "properties": {
-                    "id": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "is_primary": {
-                        "description": "Является ли адрес основным",
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "state": {
-                        "type": "string",
-                        "example": "Алматинская область"
-                    },
-                    "city": {
-                        "type": "string",
-                        "example": "Алматы"
-                    },
-                    "street": {
-                        "type": "string",
-                        "example": "Абая"
-                    },
-                    "house": {
-                        "type": "string",
-                        "example": "12"
-                    },
-                    "apartment": {
-                        "type": "string",
-                        "example": "45",
-                        "nullable": true
-                    },
-                    "postal_code": {
-                        "type": "string",
-                        "example": "050000"
-                    },
-                    "full_address": {
-                        "type": "string",
-                        "example": "Алматы, ул. Абая, д. 12, кв. 45"
-                    }
-                },
-                "type": "object"
-            },
             "Category": {
                 "title": "Категория",
                 "description": "Модель категории",
@@ -4923,41 +5566,46 @@
                 },
                 "type": "object"
             },
-            "Order": {
-                "title": "Order",
+            "Payment": {
+                "title": "Payment",
                 "required": [
-                    "id_order",
-                    "date_order",
-                    "order_amount"
+                    "user_id",
+                    "order_id",
+                    "amount",
+                    "currency",
+                    "status",
+                    "payment_method",
+                    "transaction_id"
                 ],
                 "properties": {
-                    "id_order": {
-                        "description": "Уникальный идентификатор заказа на сайте",
+                    "user_id": {
                         "type": "integer",
                         "example": 1
                     },
-                    "date_order": {
-                        "description": "Дата создания заказа",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 12:30:00"
+                    "order_id": {
+                        "type": "integer",
+                        "example": 123
                     },
-                    "number_order_1c": {
-                        "description": "Номер заказа в 1С",
-                        "type": "string",
-                        "example": "1001"
-                    },
-                    "date_order_1c": {
-                        "description": "Дата заказа в 1С",
-                        "type": "string",
-                        "format": "date-time",
-                        "example": "2023-10-01 12:30:00"
-                    },
-                    "order_amount": {
-                        "description": "Сумма заказа",
+                    "amount": {
                         "type": "number",
                         "format": "float",
-                        "example": 250.75
+                        "example": 1500
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "RUB"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "pending"
+                    },
+                    "payment_method": {
+                        "type": "string",
+                        "example": "bank_card"
+                    },
+                    "transaction_id": {
+                        "type": "string",
+                        "example": "2a3b5c7d-1234-5678-9abc-def012345678"
                     }
                 },
                 "type": "object"
@@ -5089,6 +5737,36 @@
                 },
                 "type": "object"
             },
+            "Promo": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "SIVENO10"
+                    },
+                    "discount": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-31"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "Story": {
                 "title": "Story",
                 "description": "Модель сториса",
@@ -5129,6 +5807,36 @@
                         "items": {
                             "$ref": "#/components/schemas/Product"
                         }
+                    }
+                },
+                "type": "object"
+            },
+            "Subscriber": {
+                "description": "Подписчик рассылки",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Иван Иванов"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "user@example.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-25T14:15:22Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-03-25T14:15:22Z"
                     }
                 },
                 "type": "object"
@@ -5203,6 +5911,10 @@
             "description": "Products"
         },
         {
+            "name": "Promo",
+            "description": "Promo"
+        },
+        {
             "name": "Reports",
             "description": "Reports"
         },
@@ -5213,6 +5925,10 @@
         {
             "name": "SDEK",
             "description": "SDEK"
+        },
+        {
+            "name": "Subscriptions",
+            "description": "Subscriptions"
         }
     ]
 }

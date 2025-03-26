@@ -1,10 +1,4 @@
 <?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @OA\Schema(
  *     schema="Address",
@@ -23,6 +17,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *     @OA\Property(property="full_address", type="string", example="Алматы, ул. Абая, д. 12, кв. 45")
  * )
  */
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 class Address extends Model
 {
     use HasFactory;

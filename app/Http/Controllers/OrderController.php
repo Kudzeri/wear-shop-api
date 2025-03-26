@@ -88,6 +88,13 @@ class OrderController extends Controller
      *                 enum={"yookassa"},
      *                 example="yookassa",
      *                 description="Метод оплаты: 'yookassa' - через YooKassa"
+     *             ),
+     *             @OA\Property(
+     *                 property="promo_code",
+     *                 type="string",
+     *                 nullable=true,
+     *                 example="SALE2023",
+     *                 description="Опциональный промокод для скидки"
      *             )
      *         )
      *     ),
@@ -212,7 +219,7 @@ class OrderController extends Controller
      *     @OA\Response(
      *         response=200,
      *         description="Список заказов",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Order"))
+     *         @OA\Property(type="array", @OA\Items(ref="#/components/schemas/Order"))
      *     ),
      *     @OA\Response(response=401, description="Не авторизован")
      * )
@@ -231,25 +238,79 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/orders/{id}",
-     *     summary="Получение конкретного заказа",
-     *     description="Возвращает информацию о заказе пользователя.",
-     *     tags={"Orders"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="ID заказа",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=200, description="Информация о заказе", @OA\JsonContent(ref="#/components/schemas/Order")),
-     *     @OA\Response(response=401, description="Не авторизован"),
-     *     @OA\Response(response=404, description="Заказ не найден")
-     * )
-     */
+ /**
+ * @OA\Get(
+ *     path="/api/orders/{id}",
+ *     summary="Получение конкретного заказа",
+ *     description="Возвращает информацию о заказе пользователя с товарами и адресом.",
+ *     tags={"Orders"},
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID заказа",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Информация о заказе",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=123),
+ *             @OA\Property(property="user_id", type="integer", example=1),
+ *             @OA\Property(property="address_id", type="integer", example=10),
+ *             @OA\Property(property="total_price", type="number", format="float", example=2500.75),
+ *             @OA\Property(property="status", type="string", example="pending"),
+ *             @OA\Property(property="delivery", type="string", example="express"),
+ *             @OA\Property(property="payment_id", type="integer", nullable=true, example=45),
+ *             @OA\Property(property="delivery_service_id", type="integer", nullable=true, example=3),
+ *             @OA\Property(property="delivery_service_1c", type="string", nullable=true, example="CDEK-1C-XX"),
+ *             @OA\Property(property="pickup_point_id", type="integer", nullable=true, example=5),
+ *             @OA\Property(property="pickup_point_1c", type="string", nullable=true, example="PP-1C-001"),
+ *             @OA\Property(
+ *                 property="items",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="product_id", type="integer", example=101),
+ *                     @OA\Property(property="size_id", type="integer", example=2),
+ *                     @OA\Property(property="quantity", type="integer", example=3),
+ *                     @OA\Property(property="price", type="number", format="float", example=999.99),
+ *                     @OA\Property(
+ *                         property="product",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=101),
+ *                         @OA\Property(property="name", type="string", example="Кроссовки Adidas")
+ *                     ),
+ *                     @OA\Property(
+ *                         property="size",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=2),
+ *                         @OA\Property(property="label", type="string", example="42")
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="address",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=10),
+ *                 @OA\Property(property="state", type="string", example="Алматинская область"),
+ *                 @OA\Property(property="city", type="string", example="Алматы"),
+ *                 @OA\Property(property="street", type="string", example="Абая"),
+ *                 @OA\Property(property="house", type="string", example="12"),
+ *                 @OA\Property(property="apartment", type="string", nullable=true, example="45"),
+ *                 @OA\Property(property="postal_code", type="string", example="050000"),
+ *                 @OA\Property(property="full_address", type="string", example="Алматы, ул. Абая, д. 12, кв. 45")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="Не авторизован"),
+ *     @OA\Response(response=404, description="Заказ не найден")
+ * )
+ */
+
+
     public function show($id): JsonResponse
     {
         $user = Auth::user();
@@ -463,24 +524,76 @@ class OrderController extends Controller
     }
 
     /**
-     * @OA\Get(
-     *     path="/admin/orders",
-     *     tags={"Orders"},
-     *     summary="Получить все заказы (для администратора)",
-     *     description="Позволяет администратору получить все заказы.",
-     *     operationId="getAllOrders",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Список заказов",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Order"))
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Недостаточно прав"
-     *     )
-     * )
-     */
+ * @OA\Get(
+ *     path="/admin/orders",
+ *     tags={"Orders"},
+ *     summary="Получить все заказы (для администратора)",
+ *     description="Позволяет администратору получить все заказы.",
+ *     operationId="getAllOrders",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="Список заказов",
+ *         @OA\JsonContent(
+ *             type="array",
+ *             @OA\Items(
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=123),
+ *                 @OA\Property(property="user_id", type="integer", example=1),
+ *                 @OA\Property(property="address_id", type="integer", example=10),
+ *                 @OA\Property(property="total_price", type="number", format="float", example=2500.75),
+ *                 @OA\Property(property="status", type="string", example="pending"),
+ *                 @OA\Property(property="delivery", type="string", example="express"),
+ *                 @OA\Property(property="payment_id", type="integer", nullable=true, example=45),
+ *                 @OA\Property(property="delivery_service_id", type="integer", nullable=true, example=3),
+ *                 @OA\Property(property="delivery_service_1c", type="string", nullable=true, example="CDEK-1C-XX"),
+ *                 @OA\Property(property="pickup_point_id", type="integer", nullable=true, example=5),
+ *                 @OA\Property(property="pickup_point_1c", type="string", nullable=true, example="PP-1C-001"),
+ *                 @OA\Property(
+ *                     property="items",
+ *                     type="array",
+ *                     @OA\Items(
+ *                         type="object",
+ *                         @OA\Property(property="product_id", type="integer", example=101),
+ *                         @OA\Property(property="size_id", type="integer", example=2),
+ *                         @OA\Property(property="quantity", type="integer", example=3),
+ *                         @OA\Property(property="price", type="number", format="float", example=999.99),
+ *                         @OA\Property(
+ *                             property="product",
+ *                             type="object",
+ *                             @OA\Property(property="id", type="integer", example=101),
+ *                             @OA\Property(property="name", type="string", example="Кроссовки Adidas")
+ *                         ),
+ *                         @OA\Property(
+ *                             property="size",
+ *                             type="object",
+ *                             @OA\Property(property="id", type="integer", example=2),
+ *                             @OA\Property(property="label", type="string", example="42")
+ *                         )
+ *                     )
+ *                 ),
+ *                 @OA\Property(
+ *                     property="address",
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer", example=10),
+ *                     @OA\Property(property="state", type="string", example="Алматинская область"),
+ *                     @OA\Property(property="city", type="string", example="Алматы"),
+ *                     @OA\Property(property="street", type="string", example="Абая"),
+ *                     @OA\Property(property="house", type="string", example="12"),
+ *                     @OA\Property(property="apartment", type="string", nullable=true, example="45"),
+ *                     @OA\Property(property="postal_code", type="string", example="050000"),
+ *                     @OA\Property(property="full_address", type="string", example="Алматы, ул. Абая, д. 12, кв. 45")
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Недостаточно прав"
+ *     )
+ * )
+ */
+
     public function admIndex(): JsonResponse
     {
         $user = Auth::user();
@@ -493,34 +606,84 @@ class OrderController extends Controller
     }
 
     /**
-     * @OA\Get(
-     *     path="/admin/orders/{id}",
-     *     tags={"Orders"},
-     *     summary="Показать заказ (для администратора)",
-     *     description="Позволяет администратору получить информацию о заказе.",
-     *     operationId="getOrderForAdmin",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Данные заказа",
-     *         @OA\JsonContent(ref="#/components/schemas/Order")
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Недостаточно прав"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Заказ не найден"
-     *     )
-     * )
-     */
+ * @OA\Get(
+ *     path="/admin/orders/{id}",
+ *     tags={"Orders"},
+ *     summary="Показать заказ (для администратора)",
+ *     description="Позволяет администратору получить информацию о заказе.",
+ *     operationId="getOrderForAdmin",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="ID заказа",
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Данные заказа",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=123),
+ *             @OA\Property(property="user_id", type="integer", example=1),
+ *             @OA\Property(property="address_id", type="integer", example=10),
+ *             @OA\Property(property="total_price", type="number", format="float", example=2500.75),
+ *             @OA\Property(property="status", type="string", example="pending"),
+ *             @OA\Property(property="delivery", type="string", example="express"),
+ *             @OA\Property(property="payment_id", type="integer", nullable=true, example=45),
+ *             @OA\Property(property="delivery_service_id", type="integer", nullable=true, example=3),
+ *             @OA\Property(property="delivery_service_1c", type="string", nullable=true, example="CDEK-1C-XX"),
+ *             @OA\Property(property="pickup_point_id", type="integer", nullable=true, example=5),
+ *             @OA\Property(property="pickup_point_1c", type="string", nullable=true, example="PP-1C-001"),
+ *             @OA\Property(
+ *                 property="items",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="product_id", type="integer", example=101),
+ *                     @OA\Property(property="size_id", type="integer", example=2),
+ *                     @OA\Property(property="quantity", type="integer", example=3),
+ *                     @OA\Property(property="price", type="number", format="float", example=999.99),
+ *                     @OA\Property(
+ *                         property="product",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=101),
+ *                         @OA\Property(property="name", type="string", example="Кроссовки Adidas")
+ *                     ),
+ *                     @OA\Property(
+ *                         property="size",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=2),
+ *                         @OA\Property(property="label", type="string", example="42")
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="address",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=10),
+ *                 @OA\Property(property="state", type="string", example="Алматинская область"),
+ *                 @OA\Property(property="city", type="string", example="Алматы"),
+ *                 @OA\Property(property="street", type="string", example="Абая"),
+ *                 @OA\Property(property="house", type="string", example="12"),
+ *                 @OA\Property(property="apartment", type="string", nullable=true, example="45"),
+ *                 @OA\Property(property="postal_code", type="string", example="050000"),
+ *                 @OA\Property(property="full_address", type="string", example="Алматы, ул. Абая, д. 12, кв. 45")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Недостаточно прав"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Заказ не найден"
+ *     )
+ * )
+ */
+
     public function admShow($id): JsonResponse
     {
         $user = Auth::user();
@@ -536,51 +699,102 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/admin/orders/{id}",
-     *     tags={"Orders"},
-     *     summary="Обновить заказ (для администратора)",
-     *     description="Позволяет администратору обновить заказ.",
-     *     operationId="updateOrderForAdmin",
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"address_id", "items"},
-     *             @OA\Property(property="address_id", type="integer", description="ID нового адреса доставки"),
-     *             @OA\Property(
-     *                 property="items",
-     *                 type="array",
-     *                 @OA\Items(
-     *                     @OA\Property(property="product_id", type="integer", description="ID продукта"),
-     *                     @OA\Property(property="size_id", type="integer", description="ID размера продукта"),
-     *                     @OA\Property(property="quantity", type="integer", description="Количество товара")
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Заказ обновлен",
-     *         @OA\JsonContent(ref="#/components/schemas/Order")
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Недостаточно прав"
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Заказ не найден"
-     *     )
-     * )
-     */
+   /**
+ * @OA\Put(
+ *     path="/admin/orders/{id}",
+ *     tags={"Orders"},
+ *     summary="Обновить заказ (для администратора)",
+ *     description="Позволяет администратору обновить заказ.",
+ *     operationId="updateOrderForAdmin",
+ *     security={{"bearerAuth": {}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"address_id", "items"},
+ *             @OA\Property(property="address_id", type="integer", description="ID нового адреса доставки"),
+ *             @OA\Property(
+ *                 property="items",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     required={"product_id", "size_id", "quantity"},
+ *                     @OA\Property(property="product_id", type="integer", description="ID продукта", example=101),
+ *                     @OA\Property(property="size_id", type="integer", description="ID размера", example=2),
+ *                     @OA\Property(property="quantity", type="integer", description="Количество", example=3)
+ *                 )
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Заказ обновлен",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="id", type="integer", example=123),
+ *             @OA\Property(property="user_id", type="integer", example=1),
+ *             @OA\Property(property="address_id", type="integer", example=10),
+ *             @OA\Property(property="total_price", type="number", format="float", example=2500.75),
+ *             @OA\Property(property="status", type="string", example="pending"),
+ *             @OA\Property(property="delivery", type="string", example="express"),
+ *             @OA\Property(property="payment_id", type="integer", nullable=true, example=45),
+ *             @OA\Property(property="delivery_service_id", type="integer", nullable=true, example=3),
+ *             @OA\Property(property="delivery_service_1c", type="string", nullable=true, example="CDEK-1C-XX"),
+ *             @OA\Property(property="pickup_point_id", type="integer", nullable=true, example=5),
+ *             @OA\Property(property="pickup_point_1c", type="string", nullable=true, example="PP-1C-001"),
+ *             @OA\Property(
+ *                 property="items",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="product_id", type="integer", example=101),
+ *                     @OA\Property(property="size_id", type="integer", example=2),
+ *                     @OA\Property(property="quantity", type="integer", example=3),
+ *                     @OA\Property(property="price", type="number", format="float", example=999.99),
+ *                     @OA\Property(
+ *                         property="product",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=101),
+ *                         @OA\Property(property="name", type="string", example="Кроссовки Adidas")
+ *                     ),
+ *                     @OA\Property(
+ *                         property="size",
+ *                         type="object",
+ *                         @OA\Property(property="id", type="integer", example=2),
+ *                         @OA\Property(property="label", type="string", example="42")
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(
+ *                 property="address",
+ *                 type="object",
+ *                 @OA\Property(property="id", type="integer", example=10),
+ *                 @OA\Property(property="state", type="string", example="Алматинская область"),
+ *                 @OA\Property(property="city", type="string", example="Алматы"),
+ *                 @OA\Property(property="street", type="string", example="Абая"),
+ *                 @OA\Property(property="house", type="string", example="12"),
+ *                 @OA\Property(property="apartment", type="string", nullable=true, example="45"),
+ *                 @OA\Property(property="postal_code", type="string", example="050000"),
+ *                 @OA\Property(property="full_address", type="string", example="Алматы, ул. Абая, д. 12, кв. 45")
+ *             )
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=403,
+ *         description="Недостаточно прав"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Заказ не найден"
+ *     )
+ * )
+ */
+
     public function admUpdate(Request $request, $id): JsonResponse
     {
         $user = Auth::user();
