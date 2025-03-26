@@ -26,12 +26,18 @@ class ProductImageResource extends Resource
     {
         return $form
             ->schema([
-                \Filament\Forms\Components\Select::make('product_id')
+                Forms\Components\Select::make('product_id')
                     ->relationship('product', 'name')
-                    ->searchable(),
-                \Filament\Forms\Components\FileUpload::make('image_path')
-                    ->label('Image')
-                    ->image(),
+                    ->label('Товар')
+                    ->searchable()
+                    ->required(),
+
+                Forms\Components\FileUpload::make('images')
+                    ->label('Изображения (до 10 шт)')
+                    ->multiple()
+                    ->image()
+                    ->maxFiles(10)
+                    ->required()
             ]);
     }
 
