@@ -175,3 +175,5 @@ Route::get('/reports/customers', [Report1CController::class, 'exportCustomers'])
 Route::get('/reports/products', [Report1CController::class, 'exportProducts']);
 Route::get('/reports/promos', [Report1CController::class, 'exportPromos']);
 Route::get('/reports/orders', [Report1CController::class, 'exportOrders']);
+
+Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
