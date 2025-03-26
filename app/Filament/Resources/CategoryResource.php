@@ -70,12 +70,8 @@ class CategoryResource extends Resource
                     ->label('Slug')
                     ->sortable(),
 
-                TextColumn::make('parent.title')
-                    ->label('Родительская категория')
-                    ->sortable(),
-
                 Tables\Columns\IconColumn::make('is_sale')
-                    ->label('Распродажа')
+                    ->label('В Распродаже')
                     ->sortable()
                     ->boolean()
             ])

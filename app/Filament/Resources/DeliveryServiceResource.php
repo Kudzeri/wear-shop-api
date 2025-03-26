@@ -18,6 +18,8 @@ class DeliveryServiceResource extends Resource
     protected static ?string $model = DeliveryService::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $modelLabel = 'Служба доставки';
+    protected static ?string $pluralModelLabel = 'Службы доставки';
     protected static ?string $navigationGroup = 'Сайт';
     protected static ?string $navigationLabel = 'Службы доставки';
 
@@ -47,7 +49,7 @@ class DeliveryServiceResource extends Resource
                 Tables\Columns\TextColumn::make('delivery_service'),
             ]);
     }
-    
+
     public static function getPages(): array
     {
         return [

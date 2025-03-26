@@ -27,6 +27,8 @@ class ProductResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-inbox-stack';
     protected static ?string $navigationGroup = 'Товар';
     protected static ?string $navigationLabel = 'Товары';
+    protected static ?string $modelLabel = 'Товар';
+    protected static ?string $pluralModelLabel = 'Товары';
 
     public static function form(Forms\Form $form): Forms\Form
 {
@@ -88,15 +90,6 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('images')
-                    ->label('Изображение')
-                    ->getStateUsing(fn ($record) => is_array($record->images) && count($record->images)
-                        ? Storage::url($record->images[0]['image_path'] ?? '')
-                        : null)
-                    ->disk('public')
-                    ->square()
-                    ->sortable(),
-
                 TextColumn::make('name')
                     ->label('Название товара')
                     ->sortable()
