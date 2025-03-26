@@ -74,14 +74,13 @@ class OrderService
      */
     public function createOrder(array $data, $user): array
     {
-        // Получаем все ID продуктов одним запросом
         $productIds = array_column($data['items'], 'product_id');
         if (empty($productIds)) {
             throw new Exception('Список товаров пуст');
         }
+
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
 
-        // Вычисляем общую стоимость заказа
         $totalPrice = 0;
         foreach ($data['items'] as $item) {
             if (!isset($products[$item['product_id']])) {
@@ -90,7 +89,22 @@ class OrderService
             $totalPrice += $products[$item['product_id']]->price * $item['quantity'];
         }
 
-        // Применяем скидку, если используется лояльность
+        $promo = null;
+        $promoDiscount = 0;
+        if (!empty($data['promo_code'])) {
+            $promo = Promo::where('code', $data['promo_code'])
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+                })
+                ->first();
+
+            if (!$promo) {
+                throw new Exception('Неверный или истекший промокод');
+            }
+            $promoDiscount = $promo->discount;
+            $totalPrice = $this->calculateTotalWithDiscount($data['items'], $promoDiscount);
+        }
+
         if (!empty($data['use_loyalty_points'])) {
             $discountData = $this->loyaltyService->applyDiscount($user, $totalPrice);
         } else {
@@ -101,17 +115,17 @@ class OrderService
             throw new Exception('Сумма заказа после скидки не может быть 0');
         }
 
-        return DB::transaction(function () use ($data, $user, $discountData, $products) {
-            // Создаем заказ
+        return DB::transaction(function () use ($data, $user, $discountData, $products, $promo, $promoDiscount) {
             $order = Order::create([
-                'user_id'     => $user->id,
-                'address_id'  => $data['address_id'],
-                'total_price' => $discountData['final_amount'],
-                'status'      => 'pending',
-                'delivery'    => $data['delivery'],
+                'user_id'        => $user->id,
+                'address_id'     => $data['address_id'],
+                'total_price'    => $discountData['final_amount'],
+                'status'         => 'pending',
+                'delivery'       => $data['delivery'],
+                'promo_code'     => $promo?->code,
+                'promo_discount' => $promoDiscount,
             ]);
 
-            // Готовим данные для массовой вставки позиций заказа
             $orderItems = [];
             foreach ($data['items'] as $item) {
                 $orderItems[] = [
@@ -126,7 +140,6 @@ class OrderService
             }
             OrderItem::insert($orderItems);
 
-            // Инициализируем платеж через YooKassa
             try {
                 $yooPayment = $this->yooKassaService->initiatePayment($order, $discountData['final_amount']);
                 if (!isset($yooPayment['transaction_id'])) {
@@ -161,6 +174,17 @@ class OrderService
                 'discount_applied' => $discountData,
             ];
         });
+    }
+
+    private function calculateTotalWithDiscount(array $items, int $discount): float
+    {
+        $total = 0;
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id']);
+            $total += $product->price * $item['quantity'];
+        }
+
+        return round($total * ((100 - $discount) / 100), 2);
     }
 
     /**

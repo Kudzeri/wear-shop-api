@@ -20,7 +20,7 @@ class LoyaltyResource extends Resource
     protected static ?string $navigationLabel = 'Программа лояльности';
 
     protected static ?string $modelLabel = 'Баллы лояльности';
-    protected static ?string $navigationGroup = 'Программа лояльности';
+    protected static ?string $navigationGroup = 'Маркетинг';
 
     public static function form(Forms\Form $form): Forms\Form
     {

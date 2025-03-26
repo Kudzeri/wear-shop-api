@@ -187,6 +187,7 @@ class OrderController extends Controller
             'delivery'            => 'required|string',
             'use_loyalty_points'  => 'boolean',
             'payment_method'      => 'required|string|in:yookassa',
+            'promo_code' => 'nullable|string'
         ]);
 
         try {
