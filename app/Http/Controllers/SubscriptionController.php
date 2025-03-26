@@ -1,6 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+/**
+ * @OA\Tag(
+ *     name="Subscriptions",
+ *     description="Операции с подписками"
+ * )
+ */
+
 
 use Illuminate\Http\Request;
 /**
