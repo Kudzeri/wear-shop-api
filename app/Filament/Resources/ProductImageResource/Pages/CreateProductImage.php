@@ -4,22 +4,14 @@ namespace App\Filament\Resources\ProductImageResource\Pages;
 
 use App\Filament\Resources\ProductImageResource;
 use App\Models\ProductImage;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProductImage extends CreateRecord
 {
     protected static string $resource = ProductImageResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function handleRecordCreation(array $data): ProductImage
     {
-        return [];
-    }
-
-    protected function afterCreate(): void
-    {
-        $data = $this->form->getState();
-
         foreach ($data['images'] as $imagePath) {
             ProductImage::create([
                 'product_id' => $data['product_id'],
@@ -27,7 +19,9 @@ class CreateProductImage extends CreateRecord
             ]);
         }
 
-        // Опционально — показать уведомление
         $this->notify('success', 'Изображения успешно загружены');
+
+        // Возвращаем фиктивную запись, чтобы Filament не упал
+        return new ProductImage();
     }
 }
