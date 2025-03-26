@@ -4,7 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MailTemplateResource\Pages;
 use App\Filament\Resources\MailTemplateResource\RelationManagers;
+use App\Mail\MassTemplateMail;
 use App\Models\MailTemplate;
+use App\Models\Subscriber;
 use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Mail;
 
 class MailTemplateResource extends Resource
 {
