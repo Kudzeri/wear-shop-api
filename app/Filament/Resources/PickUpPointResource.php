@@ -17,7 +17,9 @@ class PickUpPointResource extends Resource
 {
     protected static ?string $model = PickUpPoint::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
+    protected static ?string $navigationGroup = 'Сайт';
+    protected static ?string $navigationLabel = 'Пункты выдачи';
 
     public static function form(Forms\Form $form): Forms\Form
     {
