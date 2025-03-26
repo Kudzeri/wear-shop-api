@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MailTemplateResource\Pages;
 use App\Filament\Resources\MailTemplateResource\RelationManagers;
 use App\Models\MailTemplate;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
