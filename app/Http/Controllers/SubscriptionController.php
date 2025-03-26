@@ -10,6 +10,10 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Http\Request;
+use App\Http\Requests\SubscribeRequest;
+use App\Models\Subscriber;
+use App\Mail\PromoCodeMail;
+use Illuminate\Support\Facades\Mail;
 /**
  * @OA\Post(
  *     path="/api/subscribe",
