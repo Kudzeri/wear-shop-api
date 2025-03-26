@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\Report1CController;
 use App\Http\Controllers\DeliveryServiceController;
+use App\Http\Controllers\SubscriptionController;
 
 
 Route::post('register', [AuthController::class, 'register'])->name('register');
