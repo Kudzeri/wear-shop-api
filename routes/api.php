@@ -78,7 +78,7 @@ Route::prefix('users')->group(function () {
 });
 
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     // Заказы для авторизованных пользователей
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders', [OrderController::class, 'index']);
@@ -118,7 +118,7 @@ Route::put('/pickup-points/{id}', [\App\Http\Controllers\PickUpPointController::
 Route::delete('/pickup-points/{id}', [\App\Http\Controllers\PickUpPointController::class, 'destroy']);
 
 // Маршруты для администратора (пример с использованием middleware проверки роли "admin")
-Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/orders', [OrderController::class, 'admIndex']);
     Route::get('/orders/{id}', [OrderController::class, 'admShow']);
     Route::post('/orders', [OrderController::class, 'admStore']);

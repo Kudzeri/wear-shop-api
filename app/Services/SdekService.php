@@ -47,21 +47,37 @@ class SdekService
      * @return array|null Возвращает данные расчёта тарифа или null при ошибке.
      */
     public function calculateDeliveryCost(array $params): ?array
-    {
-        // В API v2 эндпоинт для расчета тарифа: calculator/tariff
-        $endpoint = 'calculator/tariff';
+{
+    $endpoint = 'calculator/tariff';
 
-        try {
-            $response = $this->client->post($endpoint, [
-                'json' => $params,
-            ]);
+    try {
+        $response = $this->client->post($endpoint, [
+            'json' => [
+                'tariff_code' => 139, // Склад-дверь
+                'from_location' => [
+                    'code' => $params['senderCityId'],
+                ],
+                'to_location' => [
+                    'code' => $params['receiverCityId'],
+                ],
+                'packages' => [
+                    [
+                        'weight' => (int)($params['weight'] * 1000), // Переводим кг в граммы
+                        'length' => $params['length'],
+                        'width'  => $params['width'],
+                        'height' => $params['height'],
+                    ]
+                ]
+            ],
+        ]);
 
-            return json_decode($response->getBody()->getContents(), true);
-        } catch (GuzzleException $e) {
-            Log::error('Ошибка расчёта доставки через СДЭК (v2)', ['error' => $e->getMessage()]);
-            return null;
-        }
+        return json_decode($response->getBody()->getContents(), true);
+    } catch (GuzzleException $e) {
+        Log::error('Ошибка расчёта доставки через СДЭК (v2)', ['error' => $e->getMessage()]);
+        return null;
     }
+}
+
 
     /**
      * Создание отправления (заказа) через СДЭК (v2).
