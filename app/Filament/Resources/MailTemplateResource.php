@@ -31,11 +31,11 @@ class MailTemplateResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
+                Forms\Components\TextInput::make('title')->label('Название письма (для администратора)')
                     ->required(),
-                Forms\Components\TextInput::make('subject')
+                Forms\Components\TextInput::make('subject')->label('Заголовок письма')
                     ->required(),
-                Forms\Components\RichEditor::make('content')
+                Forms\Components\RichEditor::make('content')->label('Тело письма')
                     ->required()
                     ->helperText('Используй [name] для вставки имени подписчика.'),
             ]);
@@ -45,9 +45,9 @@ class MailTemplateResource extends Resource
     {
         return $table
         ->columns([
-            Tables\Columns\TextColumn::make('title')->searchable(),
-            Tables\Columns\TextColumn::make('subject'),
-            Tables\Columns\TextColumn::make('created_at')->dateTime(),
+            Tables\Columns\TextColumn::make('title')->searchable()->label('Название письма'),
+            Tables\Columns\TextColumn::make('subject')->label('Заголовок'),
+            Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Дата создания'),
         ])
         ->actions([
             Tables\Actions\EditAction::make(),
