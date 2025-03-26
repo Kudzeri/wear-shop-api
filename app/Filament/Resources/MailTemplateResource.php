@@ -60,7 +60,7 @@ class MailTemplateResource extends Resource
                     $subscribers = Subscriber::all();
                     foreach ($subscribers as $subscriber) {
                         Mail::to($subscriber->email)
-                            ->queue(new MassTemplateMail($record, $subscriber));
+                            ->send(new MassTemplateMail($record, $subscriber));
                     }
                 })
         ]);
