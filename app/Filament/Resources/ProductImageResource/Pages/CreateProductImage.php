@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProductImageResource\Pages;
 use App\Filament\Resources\ProductImageResource;
 use App\Models\ProductImage;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Notifications\Notification;
 
 class CreateProductImage extends CreateRecord
 {
@@ -19,7 +20,11 @@ class CreateProductImage extends CreateRecord
             ]);
         }
 
-        $this->notify('success', 'Изображения успешно загружены');
+        Notification::make()
+            ->title('Успешно!')
+            ->body('Изображения успешно загружены')
+            ->success()
+            ->send();
 
         // Возвращаем фиктивную запись, чтобы Filament не упал
         return new ProductImage();
