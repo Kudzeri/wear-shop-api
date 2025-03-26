@@ -24,7 +24,9 @@ class StoriesResource extends Resource
     protected static ?string $model = Stories::class;
     protected static ?string $navigationLabel = 'Сторисы';
     protected static ?string $pluralModelLabel = 'Сторисы';
+    protected static ?string $navigationGroup = 'Сторисы';
     protected static ?string $modelLabel = 'Сторис';
+    protected static ?string $navigationIcon = 'heroicon-o-camera';
 
     public static function form(Forms\Form $form): Forms\Form
     {

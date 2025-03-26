@@ -17,7 +17,10 @@ class DeliveryServiceResource extends Resource
 {
     protected static ?string $model = DeliveryService::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $navigationGroup = 'Сайт';
+    protected static ?string $navigationLabel = 'Службы доставки';
+
 
     public static function form(Form $form): Form
     {

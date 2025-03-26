@@ -16,8 +16,12 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class MailTemplateResource extends Resource
 {
     protected static ?string $model = MailTemplate::class;
+    protected static ?string $navigationGroup = 'Рассылка';
+    protected static ?string $navigationLabel = 'Письма';
+    protected static ?string $modelLabel = 'Письмо';
+    protected static ?string $pluralModelLabel = 'Письма';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
     public static function form(Form $form): Form
     {

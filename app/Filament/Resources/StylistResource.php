@@ -17,6 +17,8 @@ class StylistResource extends Resource
 {
     protected static ?string $model = Stylist::class;
     protected static ?string $navigationLabel = 'Выбор стилиста';
+    protected static ?string $navigationGroup = 'Сторисы';
+    protected static ?string $navigationIcon = 'heroicon-o-camera';
 
     public static function form(Forms\Form $form): Forms\Form
     {

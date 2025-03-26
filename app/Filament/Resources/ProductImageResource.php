@@ -16,8 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ProductImageResource extends Resource
 {
     protected static ?string $model = ProductImage::class;
+    protected static ?string $modelLabel = 'Изображения';
+    protected static ?string $navigationGroup = 'Товар';
+    protected static ?string $navigationLabel = 'Фото товара';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-photo';
 
     public static function form(Form $form): Form
     {
