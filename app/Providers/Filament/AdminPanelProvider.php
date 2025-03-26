@@ -50,12 +50,12 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                SubscribersCount::class,
                 UserStats::class,
                 PaymentChart::class,
                 OrdersChart::class,
                 CategoriesChart::class,
                 CityUsersChart::class,
-                 SubscribersCount::class
 
             ])
             ->middleware([
