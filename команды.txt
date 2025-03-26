@@ -1,0 +1,37 @@
+composer install
+php artisan key:generate
+
+заполнить .env
+
+php artisan migrate
+
+php artisan l5-swagger:generate
+
+php artisan make:filament-user
+
+php artisan tinker
+
+------------------
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Models\User;
+
+// Создаём разрешение, если его нет
+$permission = Permission::findOrCreate('view_filament');
+
+// Создаём роль "admin", если её нет
+$role = Role::findOrCreate('admin');
+
+// Даём роли "admin" это разрешение
+$role->givePermissionTo($permission);
+
+// Находим пользователя
+$user = User::where('email', 'mikhail.dev@mail.ru')->first();
+
+// Назначаем пользователю роль "admin"
+$user->assignRole($role);
+
+// Назначаем пользователю разрешение напрямую (если нужно)
+$user->givePermissionTo('view_filament');
+
+---------------------
