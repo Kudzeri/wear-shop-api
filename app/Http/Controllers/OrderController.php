@@ -26,7 +26,7 @@ class OrderController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/orders",
+     *     path="/api/orders",
      *     summary="Создание заказа",
      *     description="Создает заказ для авторизованного пользователя с оплатой через YooKassa. Заказ создается со статусом 'awaiting_payment'. Дополнительно можно задать способ доставки: 'russianpost' или 'cdek'.",
      *     operationId="storeOrder",
