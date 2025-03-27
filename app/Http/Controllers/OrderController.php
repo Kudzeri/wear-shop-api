@@ -339,40 +339,6 @@ class OrderController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/orders/{orderId}/pay",
-     *     summary="Оплата заказа",
-     *     description="Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
-     *     tags={"Orders"},
-     *     security={{"bearerAuth": {}}},
-     *     @OA\Parameter(
-     *         name="orderId",
-     *         in="path",
-     *         required=true,
-     *         description="ID заказа",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Ссылка на подтверждение оплаты",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Платеж создан"),
-     *             @OA\Property(property="payment_url", type="string", example="https://yoomoney.ru/checkout/payments/v2/...")
-     *         )
-     *     ),
-     *     @OA\Response(response=400, description="Заказ уже оплачен или отменен"),
-     *     @OA\Response(response=401, description="Не авторизован"),
-     *     @OA\Response(response=404, description="Заказ не найден"),
-     *     @OA\Response(response=500, description="Ошибка при создании платежа")
-     * )
-     */
-    public function payOrder($orderId): JsonResponse
-    {
-        // Теперь оплата производится через отдельный роут/контроллер
-        return response()->json(['message' => 'Оплата через YooKassa вынесена в отдельный сервис'], 501);
-    }
-
-    /**
-     * @OA\Post(
      *     path="/api/orders/webhook",
      *     summary="Webhook для обработки платежей",
      *     description="Обрабатывает уведомления от YooKassa и обновляет статус заказа.",

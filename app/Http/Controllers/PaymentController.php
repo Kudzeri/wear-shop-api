@@ -32,6 +32,7 @@ class PaymentController extends Controller
      *         @OA\JsonContent(
      *             required={"amount", "payment_method"},
      *             @OA\Property(property="amount", type="number", example=1500.00, description="Сумма платежа"),
+     *             @OA\Property(property="order_id", type="integer", example=123, description="ID заказа"),
      *             @OA\Property(property="payment_method", type="string", enum={"bank_card", "sbp", "installments"}, description="Способ оплаты"),
      *             @OA\Property(property="use_loyalty_points", type="boolean", example=true, description="Использовать баллы лояльности")
      *         )
@@ -56,6 +57,7 @@ class PaymentController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'payment_method' => 'required|string|in:bank_card,sbp,installments',
+            'order_id' => 'required|integer|exists:orders,id',
             'use_loyalty_points' => 'boolean'
         ]);
 
@@ -66,7 +68,6 @@ class PaymentController extends Controller
 
         $totalAmount = $request->amount;
 
-        // Применяем скидку по баллам и уровню
         $discountData = $request->use_loyalty_points
             ? $this->loyaltyService->applyDiscount($user, $totalAmount)
             : ['final_amount' => $totalAmount];
@@ -87,6 +88,7 @@ class PaymentController extends Controller
 
         $paymentRecord = Payment::create([
             'user_id' => $user->id,
+            'order_id' => $request->order_id,
             'amount' => $discountData['final_amount'],
             'status' => 'pending',
             'payment_method' => $request->payment_method,
