@@ -59,22 +59,35 @@ class SdekService
 
     public function calculateDeliveryCost(array $params): ?array
     {
-        $endpoint = 'calculator/tariff';
+        $endpoint = 'calculator/tarifflist';
 
         try {
             $response = $this->client->post($endpoint, [
                 'headers' => $this->authorizedHeaders(),
                 'json' => [
-                    'tariff_code' => 139, // Склад-дверь
+                    'date' => now()->toIso8601String(), // текущая дата
+                    'type' => 1, // например, "дверь-дверь" = 1
+                    'currency' => 1, // рубли
+                    'lang' => 'rus',
                     'from_location' => [
-                        'code' => $params['senderCityId'],
+                        'code' => $params['senderCityId'] ?? 0,
+                        'postal_code' => $params['senderPostalCode'] ?? null,
+                        'country_code' => $params['senderCountryCode'] ?? 'RU',
+                        'city' => $params['senderCity'] ?? null,
+                        'address' => $params['senderAddress'] ?? null,
+                        'contragent_type' => $params['senderContragentType'] ?? 'sender',
                     ],
                     'to_location' => [
-                        'code' => $params['receiverCityId'],
+                        'code' => $params['receiverCityId'] ?? 0,
+                        'postal_code' => $params['receiverPostalCode'] ?? null,
+                        'country_code' => $params['receiverCountryCode'] ?? 'RU',
+                        'city' => $params['receiverCity'] ?? null,
+                        'address' => $params['receiverAddress'] ?? null,
+                        'contragent_type' => $params['receiverContragentType'] ?? 'recipient',
                     ],
                     'packages' => [
                         [
-                            'weight' => (int)($params['weight'] * 1000), // кг → граммы
+                            'weight' => (int)($params['weight'] * 1000),
                             'length' => $params['length'],
                             'width'  => $params['width'],
                             'height' => $params['height'],
@@ -85,10 +98,11 @@ class SdekService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
-            Log::error('Ошибка расчёта доставки через СДЭК (v2)', ['error' => $e->getMessage()]);
+            Log::error('Ошибка расчёта доставки через СДЭК (v2 - tarifflist)', ['error' => $e->getMessage()]);
             return null;
         }
     }
+
 
     public function createShipment(array $orderData): ?array
     {
@@ -123,4 +137,21 @@ class SdekService
             return null;
         }
     }
+
+    public function getShipmentByUuid(string $uuid): ?array
+    {
+        $endpoint = "orders/{$uuid}";
+
+        try {
+            $response = $this->client->get($endpoint, [
+                'headers' => $this->authorizedHeaders(),
+            ]);
+
+            return json_decode($response->getBody()->getContents(), true);
+        } catch (GuzzleException $e) {
+            Log::error('Ошибка получения информации о заказе по UUID через СДЭК', ['error' => $e->getMessage()]);
+            return null;
+        }
+    }
+
 }

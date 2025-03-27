@@ -93,6 +93,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/calculate-delivery', [SdekController::class, 'calculateDelivery']);
         Route::post('/create-shipment', [SdekController::class, 'createShipment']);
         Route::get('/track-shipment', [SdekController::class, 'trackShipment']);
+        Route::get('/shipment-by-uuid', [SdekController::class, 'getShipmentByUuid']);
     });
 
     // Маршруты Почты России
