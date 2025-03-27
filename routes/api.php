@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/calculate-delivery', [RussianPostController::class, 'calculateDelivery']);
         Route::post('/create-shipment', [RussianPostController::class, 'createShipment']);
         Route::get('/track-shipment', [RussianPostController::class, 'trackShipment']);
+        Route::get('/search-order', [RussianPostController::class, 'searchOrder']);
     });
 });
 
