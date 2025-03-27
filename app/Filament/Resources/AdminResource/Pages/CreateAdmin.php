@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Filament\Resources\AdminResource\Pages;
+
+use App\Filament\Resources\AdminResource;
+use Filament\Actions;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateAdmin extends CreateRecord
+{
+    protected static string $resource = AdminResource::class;
+
+    public static function afterCreate($record): void
+    {
+        $record->assignRole('admin');
+        $record->givePermissionTo('view_filament');
+    }
+
+}
