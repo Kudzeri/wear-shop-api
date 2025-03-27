@@ -73,6 +73,30 @@ class YooKassaService
     }
 
     /**
+     * Отмена платежа по его идентификатору.
+     *
+     * @param string $paymentId Идентификатор платежа (transaction_id)
+     * @return bool Успешно ли отменён платёж
+     */
+    public function cancelPayment(string $paymentId): bool
+    {
+        // Проверка наличия клиента
+        if (!isset($this->client)) {
+            Log::warning('YooKassa client не инициализирован для отмены платежа');
+            return false;
+        }
+
+        try {
+            $this->client->cancelPayment($paymentId);
+            return true;
+        } catch (Exception $e) {
+            Log::error('Ошибка при отмене платежа YooKassa: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+
+    /**
      * Инициализация платежа для заказа.
      *
      * Этот метод является обёрткой над методом createPayment и
@@ -82,7 +106,7 @@ class YooKassaService
      * @param float $amount Сумма платежа
      * @return mixed|null   Объект платежа или null при ошибке
      */
-    public function initiatePayment($order, float $amount)
+    public function initiatePayment(Order $order, float $amount)
     {
         $description = "Оплата заказа #{$order->id}";
         return $this->createPayment($amount, $description, 'bank_card');
