@@ -18,7 +18,7 @@ class RussianPostController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/russian-post/calculate-delivery",
+     *     path="/api/russian-post/calculate-delivery",
      *     summary="Расчет стоимости доставки через Почту России",
      *     description="Вычисляет стоимость доставки по заданным параметрам: почтовые индексы, вес и габариты посылки. Значения возвращаются в копейках.",
      *     operationId="russianPostCalculateDelivery",
@@ -82,7 +82,7 @@ class RussianPostController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/russian-post/create-shipment",
+     *     path="/api/russian-post/create-shipment",
      *     summary="Создание отправления через Почту России",
      *     description="Создает отправление (заказ) через Почту России с параметрами получателя и посылки. Использует API PUT /1.0/user/backlog.",
      *     operationId="russianPostCreateShipment",
@@ -163,7 +163,7 @@ class RussianPostController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/russian-post/track-shipment",
+     *     path="/api/russian-post/track-shipment",
      *     summary="Отслеживание отправления через Почту России",
      *     description="Возвращает информацию о статусе отправления по номеру отслеживания.",
      *     operationId="russianPostTrackShipment",
@@ -211,7 +211,7 @@ class RussianPostController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/russian-post/search-order",
+     *     path="/api/russian-post/search-order",
      *     summary="Поиск отправления по номеру заказа",
      *     description="Возвращает информацию об отправлении по order-num (идентификатору заказа магазина).",
      *     operationId="russianPostSearchOrder",

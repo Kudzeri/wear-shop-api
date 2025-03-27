@@ -18,7 +18,7 @@ class SdekController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/sdek/calculate-delivery",
+     *     path="/api/sdek/calculate-delivery",
      *     summary="Расчет стоимости доставки через СДЭК",
      *     operationId="sdekCalculateDelivery",
      *     tags={"SDEK"},
@@ -115,7 +115,7 @@ class SdekController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/sdek/create-shipment",
+     *     path="/api/sdek/create-shipment",
      *     summary="Создание отправления через СДЭК",
      *     operationId="sdekCreateShipment",
      *     tags={"SDEK"},
@@ -242,19 +242,31 @@ class SdekController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/sdek/track-shipment",
-     *     summary="Получение информации о заказе по UUID через СДЭК",
-     *     operationId="sdekGetShipmentByUuid",
+     *     path="/api/sdek/track-shipment",
+     *     summary="Отслеживание отправления через СДЭК",
+     *     description="Возвращает статус отправления по номеру заказа, указанному при создании.",
+     *     operationId="sdekTrackShipment",
      *     tags={"SDEK"},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="uuid",
+     *         name="orderNumber",
      *         in="query",
      *         required=true,
-     *         description="UUID заказа",
-     *         @OA\Schema(type="string", format="uuid", example="095be615-a8ad-4c33-8e9c-c7612fbf6c9f")
+     *         @OA\Schema(type="string"),
+     *         description="Номер заказа, указанный при создании отправления"
      *     ),
-     *     @OA\Response(response=200, description="Информация получена"),
-     *     @OA\Response(response=500, description="Ошибка")
+     *     @OA\Response(
+     *         response=200,
+     *         description="Информация об отправлении успешно получена",
+     *         @OA\JsonContent(type="object")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Ошибка отслеживания отправления через СДЭК",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Ошибка отслеживания отправления через СДЭК")
+     *         )
+     *     )
      * )
      */
     public function trackShipment(Request $request): JsonResponse
@@ -272,7 +284,7 @@ class SdekController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/sdek/shipment-by-uuid",
+     *     path="/api/sdek/shipment-by-uuid",
      *     summary="Получение информации о заказе по UUID через СДЭК",
      *     operationId="sdekGetShipmentByUuid",
      *     tags={"SDEK"},
