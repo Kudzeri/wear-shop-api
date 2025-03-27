@@ -10,98 +10,76 @@ class RussianPostService
 {
     protected Client $client;
     protected string $baseUrl;
-    protected $apiKey;
+    protected string $apiKey;
+    protected string $login;
+    protected string $password;
 
     public function __construct()
     {
-        // Эти параметры рекомендуется вынести в конфигурацию (.env)
         $this->baseUrl  = config('services.russian_post.base_url', 'https://otpravka-api.pochta.ru/');
-        $this->apiKey   = env('RUSSIAN_POST_API_KEY');
+        $this->apiKey   = config('services.russian_post.api_key');
+        $this->login    = config('services.russian_post.login');
+        $this->password = config('services.russian_post.password');
 
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
             'headers'  => [
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-                'Authorization' => 'Bearer ' . $this->apiKey,
+                'Content-Type'             => 'application/json',
+                'Accept'                   => 'application/json',
+                'Authorization'            => 'AccessToken ' . $this->apiKey,
+                'X-User-Authorization'     => 'Basic ' . base64_encode("{$this->login}:{$this->password}"),
             ],
             'timeout' => 10,
         ]);
     }
 
-    /**
-     * Расчет стоимости доставки через Почту России.
-     *
-     * @param array $params Массив с параметрами доставки, например:
-     * [
-     *    'from_postcode' => '101000', // почтовый индекс отправителя
-     *    'to_postcode'   => '190000', // почтовый индекс получателя
-     *    'weight'        => 1.5,       // вес в кг
-     *    'length'        => 30,        // длина в см
-     *    'width'         => 20,        // ширина в см
-     *    'height'        => 10,        // высота в см
-     * ]
-     *
-     * @return array|null Возвращает данные расчета или null при ошибке.
-     */
     public function calculateDeliveryCost(array $params): ?array
     {
-        // Пример эндпоинта – уточните его в документации API Почты России
-        $endpoint = '1.0/calculate';
+        $endpoint = '1.0/tariff';
 
         try {
+            $payload = [
+                'index-from'    => $params['from_postcode'],
+                'index-to'      => $params['to_postcode'],
+                'weight'        => (int)($params['weight'] * 1000),
+                'mail-type'     => 2, // посылка
+                'mail-category' => 0, // обычная
+            ];
+
             $response = $this->client->post($endpoint, [
-                'json' => $params,
+                'json' => $payload,
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
-            Log::error('Ошибка расчёта стоимости доставки через Почту России', ['error' => $e->getMessage()]);
+            Log::error('Ошибка расчёта доставки через Почту России', ['error' => $e->getMessage()]);
             return null;
         }
     }
 
-    /**
-     * Создание заказа (отправления) через Почту России.
-     *
-     * @param array $orderData Данные заказа согласно требованиям API.
-     *
-     * Пример структуры $orderData:
-     * [
-     *    'recipient' => [
-     *         'name'       => 'Иван Иванов',
-     *         'postcode'   => '190000',
-     *         'address'    => 'г. Санкт-Петербург, ул. Ленина, д.1',
-     *         'phone'      => '79991234567',
-     *         // другие поля...
-     *    ],
-     *    'sender' => [
-     *         'name'       => 'ООО Ромашка',
-     *         'postcode'   => '101000',
-     *         'address'    => 'г. Москва, ул. Пушкина, д.10',
-     *         'phone'      => '84951234567',
-     *         // другие поля...
-     *    ],
-     *    'package' => [
-     *         'weight' => 1.5,
-     *         'length' => 30,
-     *         'width'  => 20,
-     *         'height' => 10,
-     *         // дополнительные параметры упаковки...
-     *    ],
-     *    // другие параметры заказа...
-     * ]
-     *
-     * @return array|null Возвращает данные созданного заказа или null при ошибке.
-     */
     public function createShipment(array $orderData): ?array
     {
-        // Эндпоинт для создания отправления – уточните его в документации
-        $endpoint = '1.0/otpravka';
+        $endpoint = '1.0/backlog';
 
         try {
+            $payload = [[
+                'address-type-to' => 'DEFAULT',
+                'index-to'        => $orderData['recipient']['postcode'],
+                'recipient-name'  => $orderData['recipient']['name'],
+                'recipient-phone' => $orderData['recipient']['phone'],
+                'mail-type'       => 2,
+                'mail-category'   => 0,
+                'weight'          => (int)($orderData['package']['weight'] * 1000),
+                'dimension'       => [
+                    'length' => $orderData['package']['length'],
+                    'width'  => $orderData['package']['width'],
+                    'height' => $orderData['package']['height'],
+                ],
+                'declared-value' => $orderData['package']['value'] ?? 0,
+            ]];
+
             $response = $this->client->post($endpoint, [
-                'json' => $orderData,
+                'json' => $payload,
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
@@ -111,20 +89,21 @@ class RussianPostService
         }
     }
 
-    /**
-     * Отслеживание статуса отправления по штрих-коду (tracking number).
-     *
-     * @param string $trackingNumber Штрих-код отправления.
-     * @return array|null Возвращает информацию о статусе отправления или null при ошибке.
-     */
     public function trackShipment(string $trackingNumber): ?array
     {
-        // Эндпоинт для отслеживания – уточните его в документации
-        $endpoint = '1.0/track';
+        $client = new Client([
+            'base_uri' => 'https://tracking.pochta.ru/',
+        ]);
 
         try {
-            $response = $this->client->get($endpoint, [
-                'query' => ['barcode' => $trackingNumber],
+            $response = $client->get('tracking-web/rest/api/v1/track', [
+                'query' => [
+                    'rt'      => 'JSON',
+                    'barcode' => $trackingNumber,
+                ],
+                'headers' => [
+                    'Authorization' => 'AccessToken ' . $this->apiKey,
+                ],
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
@@ -132,13 +111,5 @@ class RussianPostService
             Log::error('Ошибка отслеживания отправления через Почту России', ['error' => $e->getMessage()]);
             return null;
         }
-    }
-
-    // Новый метод для обращения к API Почты России
-    public function getData()
-    {
-        // Замените 'some-endpoint' на нужный endpoint API
-        $response = $this->client->get('some-endpoint');
-        return json_decode($response->getBody(), true);
     }
 }

@@ -41,9 +41,10 @@ return [
     ],
 
     'russian_post' => [
-        'base_url' => env('RUSSIAN_POST_BASE_URL'),
-        'username' => env('RUSSIAN_POST_USERNAME'),
-        'password' => env('RUSSIAN_POST_PASSWORD')
+        'base_url' => env('RUSSIAN_POST_BASE_URL', 'https://otpravka-api.pochta.ru/'),
+        'api_key'  => env('RUSSIAN_POST_API_KEY'),
+        'login'    => env('RUSSIAN_POST_LOGIN'),
+        'password' => env('RUSSIAN_POST_PASSWORD'),
     ],
 
     'sdek' => [
