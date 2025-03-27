@@ -37,11 +37,17 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'address_id', 'total_price', 'status', 'delivery', 'payment_id',
+        'user_id', 
+        'address_id', 
+        'total_price', 
+        'status', 
+        'delivery', 
+        'payment_id',
         'delivery_service_id',      // связь с DeliveryService (id службы доставки на сайте)
         'delivery_service_1c',      // идентификатор службы доставки в 1С
         'pickup_point_id',          // связь с PickUpPoint (id ПВЗ на сайте)
         'pickup_point_1c',          // идентификатор ПВЗ в 1С
+        'delivery_type',            // новое поле: например, russianpost или cdek
     ];
 
     public function user():BelongsTo

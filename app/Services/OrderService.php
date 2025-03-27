@@ -19,11 +19,6 @@ use Exception;
 class OrderService
 {
     /**
-     * @var \App\Services\YooKassaService
-     */
-    public YooKassaService $yooKassaService;
-
-    /**
      * @var \App\Services\LoyaltyService
      */
     public LoyaltyService $loyaltyService;
@@ -31,12 +26,10 @@ class OrderService
     /**
      * OrderService constructor.
      *
-     * @param YooKassaService $yooKassaService
      * @param LoyaltyService  $loyaltyService
      */
-    public function __construct(YooKassaService $yooKassaService, LoyaltyService $loyaltyService)
+    public function __construct(LoyaltyService $loyaltyService)
     {
-        $this->yooKassaService = $yooKassaService;
         $this->loyaltyService = $loyaltyService;
     }
 
@@ -66,7 +59,6 @@ class OrderService
      * @return array Массив с созданными объектами заказа, платежа и информацией о скидке, например:
      *               [
      *                  'order' => (Order),
-     *                  'payment' => (Payment),
      *                  'discount_applied' => ['final_amount' => 1500.75]
      *               ]
      *
@@ -120,8 +112,9 @@ class OrderService
                 'user_id'        => $user->id,
                 'address_id'     => $data['address_id'],
                 'total_price'    => $discountData['final_amount'],
-                'status'         => 'pending',
+                'status'         => 'awaiting_payment',
                 'delivery'       => $data['delivery'],
+                'delivery_type'  => $data['delivery_type'] ?? null,
                 'promo_code'     => $promo?->code,
                 'promo_discount' => $promoDiscount,
             ]);
@@ -140,37 +133,8 @@ class OrderService
             }
             OrderItem::insert($orderItems);
 
-            try {
-                $yooPayment = $this->yooKassaService->initiatePayment($order, $discountData['final_amount']);
-                if (!isset($yooPayment['transaction_id'])) {
-                    throw new Exception("Ответ от YooKassa не содержит transaction_id");
-                }
-                $transactionId = $yooPayment['transaction_id'];
-            } catch (Exception $ex) {
-                Log::error('Ошибка при инициализации платежа через YooKassa', ['error' => $ex->getMessage()]);
-                throw new Exception('Ошибка при инициализации платежа через YooKassa: ' . $ex->getMessage());
-            }
-
-            $payment = Payment::create([
-                'user_id'        => $user->id,
-                'order_id'       => $order->id,
-                'amount'         => $discountData['final_amount'],
-                'currency'       => 'RUB',
-                'status'         => 'pending',
-                'payment_method' => 'yookassa',
-                'transaction_id' => $transactionId,
-            ]);
-
-            Log::info('Создан заказ', ['order_id' => $order->id, 'user_id' => $user->id]);
-            Log::info('Создан платеж', [
-                'payment_id' => $payment->id,
-                'amount'     => $discountData['final_amount'],
-                'method'     => 'yookassa'
-            ]);
-
             return [
                 'order'            => $order,
-                'payment'          => $payment,
                 'discount_applied' => $discountData,
             ];
         });

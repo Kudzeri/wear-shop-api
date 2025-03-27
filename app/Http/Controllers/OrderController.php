@@ -28,7 +28,7 @@ class OrderController extends Controller
      * @OA\Post(
      *     path="/orders",
      *     summary="Создание заказа",
-     *     description="Создает заказ и соответствующий платеж для авторизованного пользователя. Платеж осуществляется через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
+     *     description="Создает заказ для авторизованного пользователя с оплатой через YooKassa. Заказ создается со статусом 'awaiting_payment'. Дополнительно можно задать способ доставки: 'russianpost' или 'cdek'.",
      *     operationId="storeOrder",
      *     tags={"Orders"},
      *     security={{"bearerAuth":{}}},
@@ -36,7 +36,7 @@ class OrderController extends Controller
      *         required=true,
      *         description="Данные для создания заказа",
      *         @OA\JsonContent(
-     *             required={"address_id", "items", "delivery", "payment_method"},
+     *             required={"address_id", "items", "delivery", "delivery_type"},
      *             @OA\Property(
      *                 property="address_id",
      *                 type="integer",
@@ -74,7 +74,14 @@ class OrderController extends Controller
      *                 property="delivery",
      *                 type="string",
      *                 example="express",
-     *                 description="Тип доставки"
+     *                 description="Тип доставки (например, express)"
+     *             ),
+     *             @OA\Property(
+     *                 property="delivery_type",
+     *                 type="string",
+     *                 enum={"russianpost", "cdek"},
+     *                 example="russianpost",
+     *                 description="Служба доставки: 'russianpost' или 'cdek'"
      *             ),
      *             @OA\Property(
      *                 property="use_loyalty_points",
@@ -192,6 +199,7 @@ class OrderController extends Controller
             'items.*.size_id'     => 'required|exists:sizes,id',
             'items.*.quantity'    => 'required|integer|min:1',
             'delivery'            => 'required|string',
+            'delivery_type'       => 'required|string|in:russianpost,cdek',
             'use_loyalty_points'  => 'boolean',
             'payment_method'      => 'required|string|in:yookassa',
             'promo_code' => 'nullable|string'
@@ -359,36 +367,8 @@ class OrderController extends Controller
      */
     public function payOrder($orderId): JsonResponse
     {
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json(['message' => 'Не авторизован'], 401);
-        }
-
-        $order = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->find($orderId);
-
-        if (!$order) {
-            return response()->json(['message' => 'Заказ не найден или уже оплачен'], 400);
-        }
-
-        // Предполагается, что для создания платежа используется метод createPayment в сервисе YooKassa.
-        $payment = $this->orderService->yooKassaService->createPayment(
-            $order->total_price,
-            "Оплата заказа #{$order->id}",
-            'bank_card'
-        );
-
-        if (!$payment) {
-            return response()->json(['message' => 'Ошибка при создании платежа'], 500);
-        }
-
-        $order->update(['payment_id' => $payment->getId()]);
-
-        return response()->json([
-            'message' => 'Платеж создан',
-            'payment_url' => $payment->getConfirmation()->getConfirmationUrl()
-        ]);
+        // Теперь оплата производится через отдельный роут/контроллер
+        return response()->json(['message' => 'Оплата через YooKassa вынесена в отдельный сервис'], 501);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Order;
 use Exception;
 use YooKassa\Client;
 use Illuminate\Support\Str;
@@ -101,5 +102,19 @@ class YooKassaService
             Log::error('Ошибка получения статуса платежа YooKassa: ' . $e->getMessage());
             return null;
         }
+    }
+
+    // Метод для создания платежа через YooKassa
+    public function createPayment(Order $order, float $amount)
+    {
+        // ...инициализация запроса к API YooKassa...
+        // Здесь можно реализовать логику создания платежа
+        // Для демонстрации возвращаем заглушку:
+        return (object)[
+            'id' => rand(1000, 9999),
+            'confirmation' => (object)[
+                'confirmation_url' => "https://yookassa.example.com/confirm-payment/{$order->id}"
+            ]
+        ];
     }
 }
