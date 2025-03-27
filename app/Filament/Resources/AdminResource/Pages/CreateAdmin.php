@@ -10,7 +10,7 @@ class CreateAdmin extends CreateRecord
 {
     protected static string $resource = AdminResource::class;
 
-    public static function afterCreate($record): void
+    public function afterCreate($record): void
     {
         $record->assignRole('admin');
         $record->givePermissionTo('view_filament');
