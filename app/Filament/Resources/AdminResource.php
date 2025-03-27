@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class AdminResource extends Resource
 {
@@ -33,8 +34,8 @@ class AdminResource extends Resource
             TextInput::make('password')
                 ->password()
                 ->required(fn (Page $livewire) => $livewire instanceof CreateRecord)
-                ->dehydrated(fn ($state) => filled($state))
-                ->hashWithBcrypt(),
+                ->dehydrated(fn ($state) => filled($state)) // деактивирует, если пустое
+                ->dehydrateStateUsing(fn ($state) => Hash::make($state)), // хеширует
         ]);
     }
 
@@ -42,7 +43,15 @@ class AdminResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Имя')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('email')
+                    ->label('Почта')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //
@@ -56,6 +65,7 @@ class AdminResource extends Resource
                 ]),
             ]);
     }
+
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
