@@ -382,7 +382,7 @@ class OrderController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="object", type="object",
      *                 @OA\Property(property="id", type="string", example="2a3b5c7d-1234-5678-9abc-def012345678"),
-     *                 @OA\Property(property="status", type="string", example="succeeded")
+     *                 @OA\Property(property="status", type="string", example="shipped")
      *             )
      *         )
      *     ),
@@ -405,8 +405,8 @@ class OrderController extends Controller
             return response()->json(['message' => 'Заказ не найден'], 404);
         }
 
-        if ($data['object']['status'] === 'succeeded') {
-            $order->update(['status' => 'completed']);
+        if ($data['object']['status'] === 'shipped') {
+            $order->update(['status' => 'delivered']);
             // Добавляем бонусные баллы (например, 5% от суммы заказа)
             $this->orderService->loyaltyService->addPoints($order->user, floor($order->total_price * 0.05));
         } elseif ($data['object']['status'] === 'canceled') {
@@ -444,7 +444,7 @@ class OrderController extends Controller
         }
 
         $order = Order::where('user_id', $user->id)
-            ->where('status', 'pending')
+            ->where('status', 'processing')
             ->find($orderId);
 
         if (!$order) {
@@ -499,7 +499,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'Заказ уже обработан'], 400);
         }
 
-        $order->update(['status' => 'completed']);
+        $order->update(['status' => 'shipped']);
         return response()->json(['message' => 'Оплата прошла успешно, заказ завершен']);
     }
 

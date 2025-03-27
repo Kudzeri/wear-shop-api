@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Promo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
@@ -112,7 +113,7 @@ class OrderService
                 'user_id'        => $user->id,
                 'address_id'     => $data['address_id'],
                 'total_price'    => $discountData['final_amount'],
-                'status'         => 'awaiting_payment',
+                'status'         => 'new',
                 'delivery'       => $data['delivery'],
                 'delivery_type'  => $data['delivery_type'] ?? null,
                 'promo_code'     => $promo?->code,
@@ -190,7 +191,7 @@ class OrderService
                 'user_id'     => $data['user_id'],
                 'address_id'  => $data['address_id'],
                 'total_price' => $totalPrice,
-                'status'      => 'pending',
+                'status'      => 'new',
                 'delivery'    => $data['delivery'] ?? null,
             ]);
 
