@@ -103,18 +103,4 @@ class YooKassaService
             return null;
         }
     }
-
-    // Метод для создания платежа через YooKassa
-    public function createPayment(Order $order, float $amount)
-    {
-        // ...инициализация запроса к API YooKassa...
-        // Здесь можно реализовать логику создания платежа
-        // Для демонстрации возвращаем заглушку:
-        return (object)[
-            'id' => rand(1000, 9999),
-            'confirmation' => (object)[
-                'confirmation_url' => "https://yookassa.example.com/confirm-payment/{$order->id}"
-            ]
-        ];
-    }
 }
