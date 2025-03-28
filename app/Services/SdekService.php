@@ -17,8 +17,8 @@ class SdekService
     public function __construct()
     {
         $this->baseUrl = config('services.sdek.base_url', 'https://api.cdek.ru/v2/');
-        $this->clientId = config('services.sdek.client_id');
-        $this->clientSecret = config('services.sdek.client_secret');
+        $this->clientId = config('services.sdek.account');
+        $this->clientSecret = config('services.sdek.api_key');
 
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
