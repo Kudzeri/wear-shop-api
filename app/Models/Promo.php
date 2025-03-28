@@ -17,5 +17,5 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Promo extends Model
 {
-    protected $fillable = ['code', 'discount', 'expires_at'];
+    protected $fillable = ['code', 'discount', 'expires_at', 'usage_count'];
 }

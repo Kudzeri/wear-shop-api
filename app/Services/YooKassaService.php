@@ -59,7 +59,7 @@ class YooKassaService
                 'payment_method_data' => ['type' => $paymentMethod],
                 'confirmation' => [
                     'type' => 'redirect',
-                    'return_url' => url('/successPayment?orderId=' . $orderId) // <-- Передай orderId
+                    'return_url' => url('/successPayment?orderId=' . $orderId)
                 ],
                 'capture' => true,
                 'description' => $description,

@@ -92,11 +92,19 @@ class OrderService
                 ->first();
 
             if (!$promo) {
-                throw new Exception('Неверный или истекший промокод');
+                throw new \Exception('Неверный или истекший промокод');
             }
+
+            if ($promo->usage_count <= 0) {
+                throw new \Exception('Промокод уже использован максимальное количество раз');
+            }
+
+            $promo->decrement('usage_count');
+
             $promoDiscount = $promo->discount;
             $totalPrice = $this->calculateTotalWithDiscount($data['items'], $promoDiscount);
         }
+
 
         if (!empty($data['use_loyalty_points'])) {
             $discountData = $this->loyaltyService->applyDiscount($user, $totalPrice);

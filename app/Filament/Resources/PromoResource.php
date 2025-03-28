@@ -31,6 +31,10 @@ class PromoResource extends Resource
                 ->minValue(1)
                 ->maxValue(100)
                 ->required(),
+            Forms\Components\TextInput::make('discount')
+                ->label('Кол-во активаций')
+                ->numeric()
+                ->required(),
             Forms\Components\DatePicker::make('expires_at')
                 ->label('Действует до')
                 ->nullable(),
@@ -42,6 +46,7 @@ class PromoResource extends Resource
         return $table->columns([
             Tables\Columns\TextColumn::make('code')->label('Код')->searchable(),
             Tables\Columns\TextColumn::make('discount')->label('Скидка')->sortable(),
+            Tables\Columns\TextColumn::make('usage_count')->label('Кол-во активаций')->sortable(),
             Tables\Columns\TextColumn::make('expires_at')->label('Действует до')->date(),
         ])
             ->actions([
