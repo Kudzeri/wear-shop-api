@@ -80,8 +80,10 @@ class PaymentController extends Controller
         $payment = $this->yooKassaService->createPayment(
             $discountData['final_amount'],
             'Оплата заказа пользователем ' . $user->id,
-            $request->payment_method
+            $request->payment_method,
+            $request->order_id
         );
+
 
         if (!$payment) {
             return response()->json(['message' => 'Ошибка при создании платежа'], 500);

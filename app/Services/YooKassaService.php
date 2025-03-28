@@ -32,7 +32,7 @@ class YooKassaService
      * @param string $paymentMethod Метод оплаты (например, bank_card, sbp, installments)
      * @return mixed|null           Объект платежа или null при ошибке
      */
-    public function createPayment(float $amount, string $description, string $paymentMethod)
+    public function createPayment(float $amount, string $description, string $paymentMethod, int $orderId)
     {
         // Если параметры подключения не заданы, возвращаем dummy-объект
         if (empty(config('services.yookassa.shop_id')) || empty(config('services.yookassa.secret_key')) || !isset($this->client)) {
@@ -59,7 +59,7 @@ class YooKassaService
                 'payment_method_data' => ['type' => $paymentMethod],
                 'confirmation' => [
                     'type' => 'redirect',
-                    'return_url' => config('services.yookassa.return_url')
+                    'return_url' => url('/successPayment?orderId=' . $orderId) // <-- Передай orderId
                 ],
                 'capture' => true,
                 'description' => $description,
