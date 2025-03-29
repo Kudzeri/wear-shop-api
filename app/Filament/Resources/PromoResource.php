@@ -31,7 +31,7 @@ class PromoResource extends Resource
                 ->minValue(1)
                 ->maxValue(100)
                 ->required(),
-            Forms\Components\TextInput::make('discount')
+            Forms\Components\TextInput::make('usage_count')
                 ->label('Кол-во активаций')
                 ->numeric()
                 ->required(),
