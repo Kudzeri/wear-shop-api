@@ -8,6 +8,7 @@ use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PromoController;
 use App\Http\Controllers\RussianPostController;
 use App\Http\Controllers\SdekController;
 use App\Http\Controllers\StoriesController;
@@ -56,6 +57,11 @@ Route::prefix('sizes')->group(function () {
     Route::post('/', [SizeController::class, 'store']);
     Route::get('/{slug}/products', [SizeController::class, 'getProductsBySize']);
     Route::delete('/{id}', [SizeController::class, 'destroy']);
+});
+
+Route::prefix('promos')->group(function () {
+    Route::get('/', [PromoController::class, 'index']);
+    Route::post('/', [PromoController::class, 'store']);
 });
 
 Route::prefix('products')->group(function () {

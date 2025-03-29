@@ -1316,7 +1316,7 @@
                                             },
                                             "price": {
                                                 "type": "number",
-                                                "example": 19.99
+                                                "example": 19.989999999999998436805981327779591083526611328125
                                             }
                                         },
                                         "type": "object"
@@ -1644,13 +1644,34 @@
                 ]
             }
         },
-        "/orders": {
+        "/api/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Получение всех заказов пользователя",
+                "description": "Возвращает список всех заказов текущего пользователя.",
+                "operationId": "2cd7e03021e72d9d799c12dfe179c865",
+                "responses": {
+                    "200": {
+                        "description": "Список заказов"
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
                     "Orders"
                 ],
                 "summary": "Создание заказа",
-                "description": "Создает заказ и соответствующий платеж для авторизованного пользователя. Платеж осуществляется через YooKassa (yookassa). При выборе YooKassa инициируется запрос к API для получения transaction_id.",
+                "description": "Создает заказ для авторизованного пользователя с оплатой через YooKassa. Заказ создается со статусом 'awaiting_payment'. Дополнительно можно задать способ доставки: 'russianpost' или 'cdek'.",
                 "operationId": "storeOrder",
                 "requestBody": {
                     "description": "Данные для создания заказа",
@@ -1662,7 +1683,7 @@
                                     "address_id",
                                     "items",
                                     "delivery",
-                                    "payment_method"
+                                    "delivery_type"
                                 ],
                                 "properties": {
                                     "address_id": {
@@ -1700,9 +1721,18 @@
                                         }
                                     },
                                     "delivery": {
-                                        "description": "Тип доставки",
+                                        "description": "Тип доставки (например, express)",
                                         "type": "string",
                                         "example": "express"
+                                    },
+                                    "delivery_type": {
+                                        "description": "Служба доставки: 'russianpost' или 'cdek'",
+                                        "type": "string",
+                                        "enum": [
+                                            "russianpost",
+                                            "cdek"
+                                        ],
+                                        "example": "russianpost"
                                     },
                                     "use_loyalty_points": {
                                         "description": "Флаг использования бонусных баллов",
@@ -1871,29 +1901,6 @@
                 ]
             }
         },
-        "/api/orders": {
-            "get": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Получение всех заказов пользователя",
-                "description": "Возвращает список всех заказов текущего пользователя.",
-                "operationId": "2cd7e03021e72d9d799c12dfe179c865",
-                "responses": {
-                    "200": {
-                        "description": "Список заказов"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/orders/{id}": {
             "get": {
                 "tags": [
@@ -1989,7 +1996,7 @@
                                                     "price": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 999.99
+                                                        "example": 999.990000000000009094947017729282379150390625
                                                     },
                                                     "product": {
                                                         "properties": {
@@ -2079,66 +2086,6 @@
                 ]
             }
         },
-        "/api/orders/{orderId}/pay": {
-            "post": {
-                "tags": [
-                    "Orders"
-                ],
-                "summary": "Оплата заказа",
-                "description": "Создает платеж через YooKassa и возвращает ссылку для подтверждения оплаты.",
-                "operationId": "a29ed11b4561635ef0e574881f6668e0",
-                "parameters": [
-                    {
-                        "name": "orderId",
-                        "in": "path",
-                        "description": "ID заказа",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Ссылка на подтверждение оплаты",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Платеж создан"
-                                        },
-                                        "payment_url": {
-                                            "type": "string",
-                                            "example": "https://yoomoney.ru/checkout/payments/v2/..."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Заказ уже оплачен или отменен"
-                    },
-                    "401": {
-                        "description": "Не авторизован"
-                    },
-                    "404": {
-                        "description": "Заказ не найден"
-                    },
-                    "500": {
-                        "description": "Ошибка при создании платежа"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/api/orders/webhook": {
             "post": {
                 "tags": [
@@ -2161,7 +2108,7 @@
                                             },
                                             "status": {
                                                 "type": "string",
-                                                "example": "succeeded"
+                                                "example": "shipped"
                                             }
                                         },
                                         "type": "object"
@@ -2400,7 +2347,7 @@
                                                         "price": {
                                                             "type": "number",
                                                             "format": "float",
-                                                            "example": 999.99
+                                                            "example": 999.990000000000009094947017729282379150390625
                                                         },
                                                         "product": {
                                                             "properties": {
@@ -2583,7 +2530,7 @@
                                                     "price": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 999.99
+                                                        "example": 999.990000000000009094947017729282379150390625
                                                     },
                                                     "product": {
                                                         "properties": {
@@ -2813,7 +2760,7 @@
                                                     "price": {
                                                         "type": "number",
                                                         "format": "float",
-                                                        "example": 999.99
+                                                        "example": 999.990000000000009094947017729282379150390625
                                                     },
                                                     "product": {
                                                         "properties": {
@@ -2959,6 +2906,11 @@
                                         "description": "Сумма платежа",
                                         "type": "number",
                                         "example": 1500
+                                    },
+                                    "order_id": {
+                                        "description": "ID заказа",
+                                        "type": "integer",
+                                        "example": 123
                                     },
                                     "payment_method": {
                                         "description": "Способ оплаты",
@@ -3356,7 +3308,7 @@
                     {
                         "name": "sort",
                         "in": "query",
-                        "description": "Сортировка: popularity (по популярности), old (старые), new (новые), price_asc (цена по возрастанию), price_desc (цена по убыванию)",
+                        "description": "Сортировка: popularity, old, new, price_asc, price_desc",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -3367,16 +3319,6 @@
                                 "price_asc",
                                 "price_desc"
                             ]
-                        }
-                    },
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "Количество возвращаемых товаров",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "default": 10
                         }
                     }
                 ],
@@ -3837,16 +3779,16 @@
                 }
             }
         },
-        "/russian-post/calculate-delivery": {
+        "/api/russian-post/calculate-delivery": {
             "post": {
                 "tags": [
                     "RussianPost"
                 ],
                 "summary": "Расчет стоимости доставки через Почту России",
-                "description": "Вычисляет стоимость доставки через Почту России по заданным параметрам: почтовые индексы отправителя и получателя, вес и размеры посылки.",
+                "description": "Вычисляет стоимость доставки по заданным параметрам: почтовые индексы, вес и габариты посылки. Значения возвращаются в копейках.",
                 "operationId": "russianPostCalculateDelivery",
                 "requestBody": {
-                    "description": "Параметры для расчёта доставки",
+                    "description": "Параметры для расчета стоимости пересылки",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -3871,25 +3813,30 @@
                                         "example": "190000"
                                     },
                                     "weight": {
-                                        "description": "Вес посылки в кг",
+                                        "description": "Вес в кг",
                                         "type": "number",
                                         "format": "float",
-                                        "example": 1.5
+                                        "example": 1.1999999999999999555910790149937383830547332763671875
                                     },
                                     "length": {
-                                        "description": "Длина посылки в см",
-                                        "type": "number",
+                                        "description": "Длина в см",
+                                        "type": "integer",
                                         "example": 30
                                     },
                                     "width": {
-                                        "description": "Ширина посылки в см",
-                                        "type": "number",
+                                        "description": "Ширина в см",
+                                        "type": "integer",
                                         "example": 20
                                     },
                                     "height": {
-                                        "description": "Высота посылки в см",
-                                        "type": "number",
+                                        "description": "Высота в см",
+                                        "type": "integer",
                                         "example": 10
+                                    },
+                                    "fragile": {
+                                        "description": "Хрупкая посылка (опционально)",
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -3903,6 +3850,39 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "properties": {
+                                        "total-rate": {
+                                            "description": "Общая стоимость пересылки в копейках",
+                                            "type": "integer",
+                                            "example": 32000
+                                        },
+                                        "ground-rate": {
+                                            "properties": {
+                                                "rate": {
+                                                    "type": "integer",
+                                                    "example": 30000
+                                                },
+                                                "vat": {
+                                                    "type": "integer",
+                                                    "example": 5000
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "delivery-time": {
+                                            "properties": {
+                                                "min-days": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "max-days": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
                                     "type": "object"
                                 }
                             }
@@ -3932,13 +3912,13 @@
                 ]
             }
         },
-        "/russian-post/create-shipment": {
+        "/api/russian-post/create-shipment": {
             "post": {
                 "tags": [
                     "RussianPost"
                 ],
                 "summary": "Создание отправления через Почту России",
-                "description": "Создает отправление (заказ) через Почту России, используя данные получателя, отправителя и параметры посылки.",
+                "description": "Создает отправление (заказ) через Почту России с параметрами получателя и посылки. Использует API PUT /1.0/user/backlog.",
                 "operationId": "russianPostCreateShipment",
                 "requestBody": {
                     "description": "Данные отправления",
@@ -3947,40 +3927,104 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "order_num",
                                     "recipient",
-                                    "sender",
                                     "package"
                                 ],
                                 "properties": {
+                                    "order_num": {
+                                        "description": "Уникальный номер заказа",
+                                        "type": "string",
+                                        "example": "ORDER-12345"
+                                    },
                                     "recipient": {
                                         "description": "Данные получателя",
-                                        "type": "object",
-                                        "example": {
-                                            "name": "Иван Иванов",
-                                            "postcode": "190000",
-                                            "address": "г. Санкт-Петербург, ул. Пушкина, д.10",
-                                            "phone": "79991234567"
-                                        }
-                                    },
-                                    "sender": {
-                                        "description": "Данные отправителя",
-                                        "type": "object",
-                                        "example": {
-                                            "name": "ООО Ромашка",
-                                            "postcode": "101000",
-                                            "address": "г. Москва, ул. Ленина, д.1",
-                                            "phone": "84991234567"
-                                        }
+                                        "required": [
+                                            "name",
+                                            "postcode",
+                                            "region",
+                                            "city",
+                                            "street",
+                                            "house",
+                                            "phone"
+                                        ],
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Иван Иванов"
+                                            },
+                                            "postcode": {
+                                                "type": "string",
+                                                "example": "190000"
+                                            },
+                                            "region": {
+                                                "type": "string",
+                                                "example": "Ленинградская обл."
+                                            },
+                                            "city": {
+                                                "type": "string",
+                                                "example": "Санкт-Петербург"
+                                            },
+                                            "street": {
+                                                "type": "string",
+                                                "example": "ул. Пушкина"
+                                            },
+                                            "house": {
+                                                "type": "string",
+                                                "example": "10"
+                                            },
+                                            "room": {
+                                                "type": "string",
+                                                "example": "5"
+                                            },
+                                            "phone": {
+                                                "type": "string",
+                                                "example": "79991234567"
+                                            }
+                                        },
+                                        "type": "object"
                                     },
                                     "package": {
                                         "description": "Параметры посылки",
-                                        "type": "object",
-                                        "example": {
-                                            "weight": 1.5,
-                                            "length": 30,
-                                            "width": 20,
-                                            "height": 10
-                                        }
+                                        "required": [
+                                            "weight",
+                                            "length",
+                                            "width",
+                                            "height"
+                                        ],
+                                        "properties": {
+                                            "weight": {
+                                                "description": "Вес в кг",
+                                                "type": "number",
+                                                "example": 1.5
+                                            },
+                                            "length": {
+                                                "description": "Длина в см",
+                                                "type": "integer",
+                                                "example": 30
+                                            },
+                                            "width": {
+                                                "description": "Ширина в см",
+                                                "type": "integer",
+                                                "example": 20
+                                            },
+                                            "height": {
+                                                "description": "Высота в см",
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "value": {
+                                                "description": "Объявленная ценность в копейках",
+                                                "type": "integer",
+                                                "example": 5000
+                                            },
+                                            "fragile": {
+                                                "description": "Хрупкий груз",
+                                                "type": "boolean",
+                                                "example": true
+                                            }
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"
@@ -3994,6 +4038,47 @@
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "properties": {
+                                        "result-ids": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "integer",
+                                                "example": 123456
+                                            }
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "position": {
+                                                        "type": "integer",
+                                                        "example": 0
+                                                    },
+                                                    "error-codes": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "code": {
+                                                                    "type": "string",
+                                                                    "example": "UNDEFINED"
+                                                                },
+                                                                "description": {
+                                                                    "type": "string",
+                                                                    "example": "Ошибка обработки запроса"
+                                                                },
+                                                                "details": {
+                                                                    "type": "string",
+                                                                    "example": "index-to is invalid"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
                                     "type": "object"
                                 }
                             }
@@ -4023,7 +4108,7 @@
                 ]
             }
         },
-        "/russian-post/track-shipment": {
+        "/api/russian-post/track-shipment": {
             "post": {
                 "tags": [
                     "RussianPost"
@@ -4087,16 +4172,87 @@
                 ]
             }
         },
-        "/sdek/calculate-delivery": {
+        "/api/russian-post/search-order": {
+            "get": {
+                "tags": [
+                    "RussianPost"
+                ],
+                "summary": "Поиск отправления по номеру заказа",
+                "description": "Возвращает информацию об отправлении по order-num (идентификатору заказа магазина).",
+                "operationId": "russianPostSearchOrder",
+                "parameters": [
+                    {
+                        "name": "orderNumber",
+                        "in": "query",
+                        "description": "Номер заказа (order-num)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация об отправлении найдена",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Заказ не найден",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Заказ не найден"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка поиска заказа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Ошибка поиска отправления через Почту России"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sdek/calculate-delivery": {
             "post": {
                 "tags": [
                     "SDEK"
                 ],
-                "summary": "Расчет стоимости доставки через СДЭК (v2)",
-                "description": "Вычисляет стоимость доставки через СДЭК по заданным параметрам: ID города отправителя, ID города получателя, вес и размеры посылки.",
+                "summary": "Расчет стоимости доставки через СДЭК",
                 "operationId": "sdekCalculateDelivery",
                 "requestBody": {
-                    "description": "Параметры для расчёта доставки",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -4111,35 +4267,69 @@
                                 ],
                                 "properties": {
                                     "senderCityId": {
-                                        "description": "ID города отправителя",
                                         "type": "integer",
                                         "example": 44
                                     },
                                     "receiverCityId": {
-                                        "description": "ID города получателя",
                                         "type": "integer",
                                         "example": 137
                                     },
                                     "weight": {
-                                        "description": "Вес посылки в кг",
                                         "type": "number",
                                         "format": "float",
                                         "example": 1.5
                                     },
                                     "length": {
-                                        "description": "Длина посылки в см",
-                                        "type": "number",
+                                        "type": "integer",
                                         "example": 30
                                     },
                                     "width": {
-                                        "description": "Ширина посылки в см",
-                                        "type": "number",
+                                        "type": "integer",
                                         "example": 20
                                     },
                                     "height": {
-                                        "description": "Высота посылки в см",
-                                        "type": "number",
+                                        "type": "integer",
                                         "example": 10
+                                    },
+                                    "senderPostalCode": {
+                                        "type": "string",
+                                        "example": "123456"
+                                    },
+                                    "receiverPostalCode": {
+                                        "type": "string",
+                                        "example": "654321"
+                                    },
+                                    "senderCountryCode": {
+                                        "type": "string",
+                                        "example": "RU"
+                                    },
+                                    "receiverCountryCode": {
+                                        "type": "string",
+                                        "example": "RU"
+                                    },
+                                    "senderCity": {
+                                        "type": "string",
+                                        "example": "Москва"
+                                    },
+                                    "receiverCity": {
+                                        "type": "string",
+                                        "example": "Санкт-Петербург"
+                                    },
+                                    "senderAddress": {
+                                        "type": "string",
+                                        "example": "ул. Ленина, д. 1"
+                                    },
+                                    "receiverAddress": {
+                                        "type": "string",
+                                        "example": "пр. Мира, д. 2"
+                                    },
+                                    "senderContragentType": {
+                                        "type": "string",
+                                        "example": "sender"
+                                    },
+                                    "receiverContragentType": {
+                                        "type": "string",
+                                        "example": "recipient"
                                     }
                                 },
                                 "type": "object"
@@ -4149,97 +4339,249 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Стоимость доставки рассчитана",
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
+                                    "properties": {
+                                        "tariff_codes": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "tariff_code": {
+                                                        "type": "integer",
+                                                        "example": 136
+                                                    },
+                                                    "tariff_name": {
+                                                        "type": "string",
+                                                        "example": "Экспресс лайт склад-дверь"
+                                                    },
+                                                    "tariff_description": {
+                                                        "type": "string",
+                                                        "example": "Доставка с минимальной стоимостью"
+                                                    },
+                                                    "delivery_mode": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "delivery_sum": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 340.5
+                                                    },
+                                                    "period_min": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "period_max": {
+                                                        "type": "integer",
+                                                        "example": 4
+                                                    },
+                                                    "calendar_min": {
+                                                        "type": "integer",
+                                                        "example": 3
+                                                    },
+                                                    "calendar_max": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "errors": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string",
+                                                        "example": "ERR001"
+                                                    },
+                                                    "message": {
+                                                        "type": "string",
+                                                        "example": "Ошибка в адресе получателя"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "warnings": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string",
+                                                        "example": "WRN001"
+                                                    },
+                                                    "message": {
+                                                        "type": "string",
+                                                        "example": "Расчет может быть не точен"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
                                     "type": "object"
                                 }
                             }
                         }
                     },
                     "500": {
-                        "description": "Ошибка расчёта доставки через СДЭК",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Ошибка расчёта доставки через СДЭК"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Ошибка"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
-        "/sdek/create-shipment": {
+        "/api/sdek/create-shipment": {
             "post": {
                 "tags": [
                     "SDEK"
                 ],
-                "summary": "Создание отправления через СДЭК (v2)",
-                "description": "Создает отправление (заказ) через СДЭК, используя переданные данные: уникальный номер заказа, данные отправителя и получателя, тарифный код и параметры посылки.",
+                "summary": "Создание отправления через СДЭК",
                 "operationId": "sdekCreateShipment",
                 "requestBody": {
-                    "description": "Данные отправления",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
                                     "number",
-                                    "sender",
-                                    "receiver",
                                     "tariff_code",
-                                    "package"
+                                    "sender",
+                                    "recipient",
+                                    "from_location",
+                                    "to_location",
+                                    "packages"
                                 ],
                                 "properties": {
+                                    "uuid": {
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+                                    },
                                     "number": {
-                                        "description": "Уникальный номер заказа",
                                         "type": "string",
                                         "example": "ORDER-12345"
                                     },
-                                    "sender": {
-                                        "description": "Данные отправителя",
-                                        "type": "object",
-                                        "example": {
-                                            "name": "ООО Ромашка",
-                                            "address": "г. Москва, ул. Ленина, д.1",
-                                            "phone": "84991234567"
-                                        }
-                                    },
-                                    "receiver": {
-                                        "description": "Данные получателя",
-                                        "type": "object",
-                                        "example": {
-                                            "name": "Иван Иванов",
-                                            "address": "г. Санкт-Петербург, ул. Пушкина, д.10",
-                                            "phone": "79991234567"
-                                        }
-                                    },
                                     "tariff_code": {
-                                        "description": "Код тарифа СДЭК",
                                         "type": "integer",
                                         "example": 137
                                     },
-                                    "package": {
-                                        "description": "Параметры посылки",
-                                        "type": "object",
-                                        "example": {
-                                            "weight": 1.5,
-                                            "length": 30,
-                                            "width": 20,
-                                            "height": 10
+                                    "comment": {
+                                        "type": "string",
+                                        "example": "Обычная доставка"
+                                    },
+                                    "sender": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "ООО Ромашка"
+                                            },
+                                            "company": {
+                                                "type": "string",
+                                                "example": "ООО Ромашка"
+                                            },
+                                            "contragent_type": {
+                                                "type": "string",
+                                                "example": "LEGAL_ENTITY"
+                                            },
+                                            "phones": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "number": {
+                                                            "type": "string",
+                                                            "example": "84991234567"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "recipient": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "example": "Иван Иванов"
+                                            },
+                                            "company": {
+                                                "type": "string",
+                                                "example": "ИП Иванов"
+                                            },
+                                            "contragent_type": {
+                                                "type": "string",
+                                                "example": "INDIVIDUAL"
+                                            },
+                                            "phones": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "number": {
+                                                            "type": "string",
+                                                            "example": "79991234567"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "from_location": {
+                                        "properties": {
+                                            "code": {
+                                                "type": "integer",
+                                                "example": 44
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Москва, ул. Ленина, д.1"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "to_location": {
+                                        "properties": {
+                                            "code": {
+                                                "type": "integer",
+                                                "example": 137
+                                            },
+                                            "address": {
+                                                "type": "string",
+                                                "example": "г. Санкт-Петербург, ул. Пушкина, д.10"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "packages": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "number": {
+                                                    "type": "string",
+                                                    "example": "1"
+                                                },
+                                                "weight": {
+                                                    "type": "integer",
+                                                    "example": 1500
+                                                },
+                                                "length": {
+                                                    "type": "integer",
+                                                    "example": 30
+                                                },
+                                                "width": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                },
+                                                "height": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     }
                                 },
@@ -4250,71 +4592,96 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Отправление успешно создано",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Ошибка создания отправления через СДЭК",
+                        "description": "Создано",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Ошибка создания отправления через СДЭК"
+                                        "entity": {
+                                            "properties": {
+                                                "uuid": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "requests": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "request_uuid": {
+                                                        "type": "string",
+                                                        "example": "a699086b-c336-457e-9191-0c825d6efbc8"
+                                                    },
+                                                    "state": {
+                                                        "type": "string",
+                                                        "example": "ACCEPTED"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "related_entities": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string",
+                                                        "example": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "return_order"
+                                                    },
+                                                    "cdek_number": {
+                                                        "type": "string",
+                                                        "example": "123456789"
+                                                    },
+                                                    "create_time": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2024-03-27T14:15:22Z"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
                                 }
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Ошибка"
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
-        "/sdek/track-shipment": {
-            "post": {
+        "/api/sdek/track-shipment": {
+            "get": {
                 "tags": [
                     "SDEK"
                 ],
-                "summary": "Отслеживание отправления через СДЭК (v2)",
-                "description": "Возвращает статус отправления через СДЭК по уникальному номеру заказа.",
+                "summary": "Отслеживание отправления через СДЭК",
+                "description": "Возвращает статус отправления по номеру заказа, указанному при создании.",
                 "operationId": "sdekTrackShipment",
-                "requestBody": {
-                    "description": "Номер заказа для отслеживания отправления",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "orderNumber"
-                                ],
-                                "properties": {
-                                    "orderNumber": {
-                                        "description": "Уникальный номер заказа, используемый для отслеживания",
-                                        "type": "string",
-                                        "example": "ORDER-12345"
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "parameters": [
+                    {
+                        "name": "orderNumber",
+                        "in": "query",
+                        "description": "Номер заказа, указанный при создании отправления",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
                         }
                     }
-                },
+                ],
                 "responses": {
                     "200": {
-                        "description": "Информация о статусе отправления получена",
+                        "description": "Информация об отправлении успешно получена",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -4345,6 +4712,36 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/sdek/shipment-by-uuid": {
+            "get": {
+                "tags": [
+                    "SDEK"
+                ],
+                "summary": "Получение информации о заказе по UUID через СДЭК",
+                "operationId": "sdekGetShipmentByUuid",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "query",
+                        "description": "UUID заказа",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "example": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация получена"
+                    },
+                    "500": {
+                        "description": "Ошибка"
+                    }
+                }
             }
         },
         "/api/sizes": {
@@ -4461,7 +4858,7 @@
                                             },
                                             "price": {
                                                 "type": "number",
-                                                "example": 19.99
+                                                "example": 19.989999999999998436805981327779591083526611328125
                                             }
                                         },
                                         "type": "object"
@@ -5703,7 +6100,7 @@
                         "description": "Цена продажи",
                         "type": "number",
                         "format": "float",
-                        "example": 199.99
+                        "example": 199.990000000000009094947017729282379150390625
                     },
                     "weight": {
                         "description": "Вес в килограммах",

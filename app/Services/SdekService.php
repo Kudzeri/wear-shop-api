@@ -16,7 +16,7 @@ class SdekService
 
     public function __construct()
     {
-        $this->baseUrl = config('services.sdek.base_url', 'https://api.cdek.ru/v2/');
+        $this->baseUrl = config('services.sdek.base_url', 'https://api.cdek.ru/v2');
         $this->clientId = config('services.sdek.account');
         $this->clientSecret = config('services.sdek.api_key');
 
@@ -38,8 +38,8 @@ class SdekService
                     'client_secret' => $this->clientSecret,
                 ],
             ]);
-
             $data = json_decode($response->getBody()->getContents(), true);
+
 
             return $data['access_token'] ?? '';
         } catch (GuzzleException $e) {
@@ -60,12 +60,12 @@ class SdekService
     public function calculateDeliveryCost(array $params): ?array
     {
         $endpoint = 'calculator/tarifflist';
-
+        
         try {
+            Log::info('Отдых не для разрабов: Время - '.now()->setTimezone('UTC')->format('Y-m-d\TH:i:s\Z'));
             $response = $this->client->post($endpoint, [
                 'headers' => $this->authorizedHeaders(),
                 'json' => [
-                    'date' => now()->toIso8601String(), // текущая дата
                     'type' => 1, // например, "дверь-дверь" = 1
                     'currency' => 1, // рубли
                     'lang' => 'rus',

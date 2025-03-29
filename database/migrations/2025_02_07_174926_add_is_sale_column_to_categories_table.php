@@ -21,5 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+<<<<<<< Updated upstream
+=======
+        Schema::table('products', function (Blueprint $table) {
+        });
+>>>>>>> Stashed changes
     }
 };

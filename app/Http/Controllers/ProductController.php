@@ -16,109 +16,102 @@ use OpenApi\Annotations as OA;
 class ProductController extends Controller
 {
     /**
-     * @OA\Get(
-     *     path="/api/products",
-     *     summary="Получить список всех продуктов с фильтрами",
-     *     tags={"Products"},
-     *     @OA\Parameter(
-     *         name="category_slug",
-     *         in="query",
-     *         required=false,
-     *         description="Slug категории",
-     *         @OA\Schema(type="string", example="clothing")
-     *     ),
-     *     @OA\Parameter(
-     *         name="color",
-     *         in="query",
-     *         required=false,
-     *         description="Фильтр по цвету (название цвета)",
-     *         @OA\Schema(type="string", example="черный")
-     *     ),
-     *     @OA\Parameter(
-     *         name="size",
-     *         in="query",
-     *         required=false,
-     *         description="Фильтр по размеру (например, 'M')",
-     *         @OA\Schema(type="string", example="M")
-     *     ),
-     *     @OA\Parameter(
-     *         name="sort",
-     *         in="query",
-     *         required=false,
-     *         description="Сортировка: popularity (по популярности), old (старые), new (новые), price_asc (цена по возрастанию), price_desc (цена по убыванию)",
-     *         @OA\Schema(type="string", enum={"popularity", "old", "new", "price_asc", "price_desc"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="limit",
-     *         in="query",
-     *         required=false,
-     *         description="Количество возвращаемых товаров",
-     *         @OA\Schema(type="integer", default=10)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Список продуктов",
-     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
-     *     )
-     * )
-     */
-    public function index(Request $request): JsonResponse
-    {
-        $query = Product::with('images', 'wishlistedBy', 'sizes', 'colors', 'category');
+ * @OA\Get(
+ *     path="/api/products",
+ *     summary="Получить список всех продуктов с фильтрами",
+ *     tags={"Products"},
+ *     @OA\Parameter(
+ *         name="category_slug",
+ *         in="query",
+ *         required=false,
+ *         description="Slug категории",
+ *         @OA\Schema(type="string", example="clothing")
+ *     ),
+ *     @OA\Parameter(
+ *         name="color",
+ *         in="query",
+ *         required=false,
+ *         description="Фильтр по цвету (название цвета)",
+ *         @OA\Schema(type="string", example="черный")
+ *     ),
+ *     @OA\Parameter(
+ *         name="size",
+ *         in="query",
+ *         required=false,
+ *         description="Фильтр по размеру (например, 'M')",
+ *         @OA\Schema(type="string", example="M")
+ *     ),
+ *     @OA\Parameter(
+ *         name="sort",
+ *         in="query",
+ *         required=false,
+ *         description="Сортировка: popularity, old, new, price_asc, price_desc",
+ *         @OA\Schema(type="string", enum={"popularity", "old", "new", "price_asc", "price_desc"})
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Список продуктов",
+ *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/Product"))
+ *     )
+ * )
+ */
+public function index(Request $request): JsonResponse
+{
+    $query = Product::with('images', 'wishlistedBy', 'sizes', 'colors', 'category');
 
-        // Фильтрация по slug категории
-        if ($request->has('category_slug')) {
-            $category = Category::where('slug', $request->query('category_slug'))->first();
-            if ($category) {
-                $query->where('category_id', $category->id);
-            }
+    // Фильтр по категории
+    if ($request->filled('category_slug')) {
+        $category = Category::where('slug', $request->query('category_slug'))->first();
+        if ($category) {
+            $query->where('category_id', $category->id);
         }
-
-        // Фильтрация по цвету
-        if ($request->has('color')) {
-            $color = $request->query('color');
-            $query->whereHas('colors', function ($q) use ($color) {
-                $q->where('name', $color);
-            });
-        }
-
-        // Фильтрация по размеру
-        if ($request->has('size')) {
-            $size = $request->query('size');
-            $query->whereHas('sizes', function ($q) use ($size) {
-                $q->where('name', $size);
-            });
-        }
-
-        // Сортировка
-        switch ($request->query('sort')) {
-            case 'popularity':
-                $query->withCount('wishlistedBy')->orderByDesc('wishlisted_by_count');
-                break;
-            case 'old':
-                $query->orderBy('created_at', 'asc');
-                break;
-            case 'new':
-                $query->orderBy('created_at', 'desc');
-                break;
-            case 'price_asc':
-                $query->orderBy('price', 'asc');
-                break;
-            case 'price_desc':
-                $query->orderBy('price', 'desc');
-                break;
-        }
-
-        $limit = $request->query('limit', 10);
-        $products = $query->paginate($limit);
-
-        $products->getCollection()->transform(function ($product) {
-            $product->discounted_price = $product->getDiscountedPrice();
-            return $product;
-        });
-
-        return response()->json($products);
     }
+
+    // Фильтр по цвету
+    if ($request->filled('color')) {
+        $color = $request->query('color');
+        $query->whereHas('colors', function ($q) use ($color) {
+            $q->where('name', $color);
+        });
+    }
+
+    // Фильтр по размеру
+    if ($request->filled('size')) {
+        $size = $request->query('size');
+        $query->whereHas('sizes', function ($q) use ($size) {
+            $q->where('name', $size);
+        });
+    }
+
+    // Сортировка
+    switch ($request->query('sort')) {
+        case 'popularity':
+            $query->withCount('wishlistedBy')->orderByDesc('wishlisted_by_count');
+            break;
+        case 'old':
+            $query->orderBy('created_at', 'asc');
+            break;
+        case 'new':
+            $query->orderBy('created_at', 'desc');
+            break;
+        case 'price_asc':
+            $query->orderBy('price', 'asc');
+            break;
+        case 'price_desc':
+            $query->orderBy('price', 'desc');
+            break;
+    }
+
+    $products = $query->get();
+
+    $products->transform(function ($product) {
+        $product->discounted_price = $product->getDiscountedPrice();
+        return $product;
+    });
+
+    return response()->json($products);
+}
+
 
     /**
      * @OA\Post(

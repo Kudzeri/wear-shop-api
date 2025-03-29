@@ -5,6 +5,7 @@ namespace App\Services;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RussianPostService
 {
@@ -13,6 +14,7 @@ class RussianPostService
     protected string $apiKey;
     protected string $login;
     protected string $password;
+    protected string $token;
 
     public function __construct()
     {
@@ -20,6 +22,7 @@ class RussianPostService
         $this->apiKey   = config('services.russian_post.api_key');
         $this->login    = config('services.russian_post.login');
         $this->password = config('services.russian_post.password');
+        $this->token    = config('services.russian_post.token');
 
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
@@ -27,43 +30,43 @@ class RussianPostService
                 'Content-Type'             => 'application/json',
                 'Accept'                   => 'application/json',
                 'Authorization'            => 'AccessToken ' . $this->apiKey,
-                'X-User-Authorization'     => 'Basic ' . base64_encode("{$this->login}:{$this->password}"),
+                'X-User-Authorization'     => 'Basic ' . $this->token,
             ],
             'timeout' => 10,
         ]);
     }
 
-    public function calculateDeliveryCost(array $params): ?array
+    public function calculateDeliveryCost(array $params)
     {
         $endpoint = '1.0/tariff';
 
         try {
             $payload = [
-                'index-from'    => $params['from_postcode'],
-                'index-to'      => $params['to_postcode'],
-                'mail-type'     => 'POSTAL_PARCEL',
-                'mail-category' => 'ORDINARY',
-                'mass'          => (int)($params['weight'] * 1000), // в граммах
-                'dimension'     => [
-                    'length' => (int)$params['length'],
-                    'width'  => (int)$params['width'],
-                    'height' => (int)$params['height'],
-                ],
-                'fragile' => true, // опционально
-            ];
+               'index-from'    => $params['from_postcode'],
+               'index-to'      => $params['to_postcode'],
+               'mail-type'     => 'POSTAL_PARCEL',
+               'mail-category' => 'ORDINARY',
+               'mass'          => (int)($params['weight'] * 1000), // в граммах
+               'dimension'     => [
+                   'length' => (int)$params['length'],
+                   'width'  => (int)$params['width'],
+                   'height' => (int)$params['height'],
+               ],
+               'fragile' => true, // опционально
+           ];
 
             $headers = [
                 'Content-Type'           => 'application/json;charset=UTF-8',
                 'Accept'                 => 'application/json;charset=UTF-8',
-                'Authorization'          => 'AccessToken ' . config('services.russian_post.access_token'),
-                'X-User-Authorization'   => 'Basic ' . base64_encode(config('services.russian_post.login') . ':' . config('services.russian_post.password')),
+                'Authorization'          => 'AccessToken ' . $this->apiKey,
+                'X-User-Authorization'   => 'Basic ' . base64_encode($this->login . ':' . $this->password),
             ];
 
             $response = $this->client->post($endpoint, [
                 'headers' => $headers,
-                'json'    => $payload,
+                'json' => $payload,
             ]);
-
+            
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
             Log::error('Ошибка расчёта доставки через Почту России', ['error' => $e->getMessage()]);

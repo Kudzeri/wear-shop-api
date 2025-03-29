@@ -86,6 +86,7 @@ class SdekController extends Controller
      */
     public function calculateDelivery(Request $request): JsonResponse
     {
+        
         $validated = $request->validate([
             'senderCityId'           => 'required|integer',
             'receiverCityId'         => 'required|integer',
@@ -106,9 +107,9 @@ class SdekController extends Controller
         ]);
 
         $result = $this->sdekService->calculateDeliveryCost($validated);
-        if (!$result) {
-            return response()->json(['message' => 'Ошибка расчёта доставки через СДЭК'], 500);
-        }
+       if (!$result) {
+           return response()->json(['message' => 'Ошибка расчёта доставки через СДЭК'], 500);
+       }
         return response()->json($result);
     }
 

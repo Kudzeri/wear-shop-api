@@ -45,6 +45,8 @@ return [
         'api_key'  => env('RUSSIAN_POST_API_KEY'),
         'login'    => env('RUSSIAN_POST_LOGIN'),
         'password' => env('RUSSIAN_POST_PASSWORD'),
+        'token' => env('RUSSIAN_POST_TOKEN'),
+        'access_token' => env('RUSSIAN_POST_ASSETS_TOKEN'),
     ],
 
     'sdek' => [
